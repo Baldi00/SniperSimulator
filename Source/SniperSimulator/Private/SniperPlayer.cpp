@@ -52,6 +52,8 @@ void ASniperPlayer::BeginPlay()
             Subsystem->AddMappingContext(DefaultMappingContext, 0);
 
     Animator = Cast<USniperPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+    AimingCameraComponent = AimingCameraActor->GetChildActor()->FindComponentByClass<UCameraComponent>();
+    AimingCameraComponent->bConstrainAspectRatio = false;
 }
 
 void ASniperPlayer::Tick(float DeltaTime)
@@ -75,6 +77,16 @@ void ASniperPlayer::Tick(float DeltaTime)
     default:
         break;
     }
+
+    AimingCameraComponent->FieldOfView = FMath::FInterpTo(AimingCameraComponent->FieldOfView, GetCurrentZoomFieldOfView(), DeltaTime, 10);
+
+    if (bIsAiming)
+    {
+        FHitResult HitResult;
+        UKismetSystemLibrary::LineTraceSingle(this, AimingCameraComponent->GetComponentLocation(), AimingCameraComponent->GetComponentLocation() + AimingCameraComponent->GetForwardVector() * 150000, ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResult, true);
+        CurrentTargetDistance = HitResult.Distance / 100;
+        OnTargetDistandceUpdated.Broadcast(CurrentTargetDistance);
+    }
 }
 
 void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -88,6 +100,7 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
         EnhancedInputComponent->BindAction(ProneAction, ETriggerEvent::Completed, this, &ASniperPlayer::ToggleProne);
         EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ASniperPlayer::StartAiming);
         EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ASniperPlayer::StopAiming);
+        EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ASniperPlayer::Zoom);
     }
 }
 
@@ -119,10 +132,14 @@ void ASniperPlayer::Look(const FInputActionValue& Value)
 {
     const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
+    float Sensitivity = 1;
+    if (bIsAiming)
+        Sensitivity = 1.f / ZoomLevels[CurrentZoomIndex];
+
     if (Controller != nullptr)
     {
-        AddControllerYawInput(LookAxisVector.X);
-        AddControllerPitchInput(LookAxisVector.Y);
+        AddControllerYawInput(LookAxisVector.X * Sensitivity);
+        AddControllerPitchInput(LookAxisVector.Y * Sensitivity);
     }
 }
 
@@ -179,6 +196,22 @@ void ASniperPlayer::StopAiming(const FInputActionValue& Value)
     GetCharacterMovement()->SafeMoveUpdatedComponent(FVector::ZeroVector, FRotator(0, GetControlRotation().Yaw, 0), false, UnusedHit);
     SwitchToDefaultView();
     UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(this, 0.2f);
+}
+
+void ASniperPlayer::Zoom(const FInputActionValue& Value)
+{
+    if (!bIsAiming)
+        return;
+
+    const float Input = Value.Get<float>();
+
+    if (Input > 0)
+        CurrentZoomIndex++;
+    else if (Input < 0)
+        CurrentZoomIndex--;
+
+    CurrentZoomIndex = FMath::Clamp(CurrentZoomIndex, 0, ZoomLevels.Num() - 1);
+    OnZoomLevelUpdated.Broadcast(ZoomLevels[CurrentZoomIndex]);
 }
 
 void ASniperPlayer::SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState)

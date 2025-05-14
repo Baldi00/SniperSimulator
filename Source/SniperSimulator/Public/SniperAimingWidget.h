@@ -5,6 +5,8 @@
 #include "SniperAimingWidget.generated.h"
 
 class UTextBlock;
+class ASniperPlayer;
+class ASniperSimulatorGameState;
 
 UCLASS()
 class SNIPERSIMULATOR_API USniperAimingWidget : public UUserWidget
@@ -23,6 +25,9 @@ protected:
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget), DisplayName = "Wind Correction")
 	TObjectPtr<UTextBlock> WindCorrection = nullptr;
 
+	ASniperPlayer* SniperPlayer = nullptr;
+	ASniperSimulatorGameState* GameState = nullptr;
+
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
@@ -33,7 +38,7 @@ private:
 	UFUNCTION()
 	void UpdateTargetDistance(float NewTargetDistance);
 	UFUNCTION()
-	void UpdateWindSpeed(float NewWindSpeed);
+	void UpdateCurrentWind(float NewWindSpeed, float NewWindAngle);
 	UFUNCTION()
 	void UpdateZoomLevel(int32 NewZoomLevel);
 	UFUNCTION()

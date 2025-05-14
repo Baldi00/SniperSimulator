@@ -13,6 +13,9 @@ class UInputAction;
 class USniperPlayerAnimInstance;
 class USniperAimingWidget;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnZoomLevelUpdated, int32, InCurrentZoomLevel);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDistandceUpdated, float, InCurrentTargetDistance);
+
 UCLASS()
 class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
 {
@@ -48,6 +51,9 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UInputAction> AimAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> ZoomAction;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float StandingWalkSpeed = 180.f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -58,14 +64,26 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
     TSubclassOf<USniperAimingWidget> AimingWidgetClass;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SniperZoom, meta = (AllowPrivateAccess = "true"))
+    TArray<int32> ZoomLevels;
+
     UPROPERTY()
     TObjectPtr<USniperPlayerAnimInstance> Animator = nullptr;
     UPROPERTY()
     TObjectPtr<USniperAimingWidget> AimingWidget = nullptr;
-    
+
     bool bIsAiming = false;
     EPlayerPoseState PlayerState = EPlayerPoseState::STANDING;
     FTimerHandle DefaultToAimingTimerHandler;
+
+    TObjectPtr<UCameraComponent> AimingCameraComponent;
+
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    int32 CurrentZoomIndex = 0;
+    float OriginalFov = 90;
+
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    float CurrentTargetDistance = 0;
 
 public:
     ASniperPlayer();
@@ -85,8 +103,21 @@ protected:
     void ToggleProne(const FInputActionValue& Value);
     void StartAiming(const FInputActionValue& Value);
     void StopAiming(const FInputActionValue& Value);
+    void Zoom(const FInputActionValue& Value);
 
     void SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState);
     void SwitchToDefaultView();
     void SwitchToAimingView();
+
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FORCEINLINE float GetCurrentZoomFieldOfView() { return FMath::RadiansToDegrees(2 * FMath::Atan(FMath::Tan(FMath::DegreesToRadians(OriginalFov / 2)) / ZoomLevels[CurrentZoomIndex])); }
+
+public:
+    UPROPERTY(BlueprintAssignable)
+    FOnZoomLevelUpdated OnZoomLevelUpdated;
+    UPROPERTY(BlueprintAssignable)
+    FOnTargetDistandceUpdated OnTargetDistandceUpdated;
+
+    FORCEINLINE int32 GetCurrentZoomLevel() { return ZoomLevels[CurrentZoomIndex]; }
+    FORCEINLINE float GetCurrentTargetDistance() { return CurrentTargetDistance; }
 };
