@@ -28,6 +28,7 @@ public:
 	FORCEINLINE float GetWindSpeed() const { return WindSpeed + WindSpeedNoise; }
 	FORCEINLINE float GetWindAngle() const { return WindAngle + WindAngleNoise; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetWindAngleRelativeToPlayer();
 
 	FOnWindUpdated OnWindUpdated;

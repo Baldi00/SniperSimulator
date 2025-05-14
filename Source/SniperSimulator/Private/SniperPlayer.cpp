@@ -83,7 +83,7 @@ void ASniperPlayer::Tick(float DeltaTime)
     if (bIsAiming)
     {
         FHitResult HitResult;
-        UKismetSystemLibrary::LineTraceSingle(this, AimingCameraComponent->GetComponentLocation(), AimingCameraComponent->GetComponentLocation() + AimingCameraComponent->GetForwardVector() * 150000, ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResult, true);
+        UKismetSystemLibrary::LineTraceSingle(this, AimingCameraComponent->GetComponentLocation(), AimingCameraComponent->GetComponentLocation() + AimingCameraComponent->GetForwardVector() * 300000, ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResult, true);
         CurrentTargetDistance = HitResult.Distance / 100;
         OnTargetDistandceUpdated.Broadcast(CurrentTargetDistance);
     }
@@ -101,6 +101,8 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
         EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ASniperPlayer::StartAiming);
         EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ASniperPlayer::StopAiming);
         EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ASniperPlayer::Zoom);
+        EnhancedInputComponent->BindAction(ElevationRegulationAction, ETriggerEvent::Triggered, this, &ASniperPlayer::RegolateElevation);
+        EnhancedInputComponent->BindAction(WindageRegulationAction, ETriggerEvent::Triggered, this, &ASniperPlayer::RegolateWindage);
     }
 }
 
@@ -212,6 +214,38 @@ void ASniperPlayer::Zoom(const FInputActionValue& Value)
 
     CurrentZoomIndex = FMath::Clamp(CurrentZoomIndex, 0, ZoomLevels.Num() - 1);
     OnZoomLevelUpdated.Broadcast(ZoomLevels[CurrentZoomIndex]);
+}
+
+void ASniperPlayer::RegolateElevation(const FInputActionValue& Value)
+{
+    if (!bIsAiming)
+        return;
+
+    const float Input = Value.Get<float>();
+
+    if (Input > 0)
+        CurrentElevationLevel++;
+    else if (Input < 0)
+        CurrentElevationLevel--;
+
+    AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle, CurrentWindageLevel * ClickAngle, 0));
+    OnElevationRegulationUpdated.Broadcast(CurrentElevationLevel);
+}
+
+void ASniperPlayer::RegolateWindage(const FInputActionValue& Value)
+{
+    if (!bIsAiming)
+        return;
+
+    const float Input = Value.Get<float>();
+
+    if (Input > 0)
+        CurrentWindageLevel++;
+    else if (Input < 0)
+        CurrentWindageLevel--;
+
+    AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle, CurrentWindageLevel * ClickAngle, 0));
+    OnWindageRegulationUpdated.Broadcast(CurrentWindageLevel);
 }
 
 void ASniperPlayer::SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState)

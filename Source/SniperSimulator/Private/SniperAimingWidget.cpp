@@ -11,6 +11,8 @@ void USniperAimingWidget::NativeConstruct()
     UpdateZoomLevel(SniperPlayer->GetCurrentZoomLevel());
     UpdateTargetDistance(SniperPlayer->GetCurrentTargetDistance());
     UpdateCurrentWind(GameState->GetWindSpeed(), GameState->GetWindAngle());
+    UpdateElevation(SniperPlayer->GetCurrentElevationLevel());
+    UpdateWindCorrection(SniperPlayer->GetCurrentWindageLevel());
 }
 
 void USniperAimingWidget::NativeDestruct()
@@ -24,6 +26,8 @@ void USniperAimingWidget::SetBindings()
     SniperPlayer = Cast<ASniperPlayer>(GetOwningPlayerPawn());
     SniperPlayer->OnZoomLevelUpdated.AddUniqueDynamic(this, &USniperAimingWidget::UpdateZoomLevel);
     SniperPlayer->OnTargetDistandceUpdated.AddUniqueDynamic(this, &USniperAimingWidget::UpdateTargetDistance);
+    SniperPlayer->OnElevationRegulationUpdated.AddUniqueDynamic(this, &USniperAimingWidget::UpdateElevation);
+    SniperPlayer->OnWindageRegulationUpdated.AddUniqueDynamic(this, &USniperAimingWidget::UpdateWindCorrection);
 
     GameState = Cast<ASniperSimulatorGameState>(UGameplayStatics::GetGameState(this));
     GameState->OnWindUpdated.AddUniqueDynamic(this, &USniperAimingWidget::UpdateCurrentWind);
@@ -33,6 +37,8 @@ void USniperAimingWidget::ResetBindings()
 {
     SniperPlayer->OnZoomLevelUpdated.RemoveDynamic(this, &USniperAimingWidget::UpdateZoomLevel);
     SniperPlayer->OnTargetDistandceUpdated.RemoveDynamic(this, &USniperAimingWidget::UpdateTargetDistance);
+    SniperPlayer->OnElevationRegulationUpdated.RemoveDynamic(this, &USniperAimingWidget::UpdateElevation);
+    SniperPlayer->OnWindageRegulationUpdated.RemoveDynamic(this, &USniperAimingWidget::UpdateWindCorrection);
     GameState->OnWindUpdated.RemoveDynamic(this, &USniperAimingWidget::UpdateCurrentWind);
 }
 
@@ -57,12 +63,12 @@ void USniperAimingWidget::UpdateZoomLevel(int32 NewZoomLevel)
     ZoomLevel->SetText(FText::FromString(FString::Printf(TEXT("%dx"), NewZoomLevel)));
 }
 
-void USniperAimingWidget::UpdateElevation(float NewElevation)
+void USniperAimingWidget::UpdateElevation(int32 NewElevation)
 {
-    Elevation->SetText(FText::FromString(FString::Printf(TEXT("%d m"), static_cast<int32>(NewElevation))));
+    Elevation->SetText(FText::FromString(FString::Printf(TEXT("%d clicks"), NewElevation)));
 }
 
-void USniperAimingWidget::UpdateWindCorrection(float NewWindCorrection)
+void USniperAimingWidget::UpdateWindCorrection(int32 NewWindCorrection)
 {
-    WindCorrection->SetText(FText::FromString(FString::Printf(TEXT("%4.1f m/s"), NewWindCorrection)));
+    WindCorrection->SetText(FText::FromString(FString::Printf(TEXT("%d clicks"), NewWindCorrection)));
 }

@@ -42,7 +42,7 @@ private:
 	UFUNCTION()
 	void UpdateZoomLevel(int32 NewZoomLevel);
 	UFUNCTION()
-	void UpdateElevation(float NewElevation);
+	void UpdateElevation(int32 NewElevation);
 	UFUNCTION()
-	void UpdateWindCorrection(float NewWindCorrection);
+	void UpdateWindCorrection(int32 NewWindCorrection);
 };

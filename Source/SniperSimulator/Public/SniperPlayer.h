@@ -15,6 +15,8 @@ class USniperAimingWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnZoomLevelUpdated, int32, InCurrentZoomLevel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDistandceUpdated, float, InCurrentTargetDistance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnElevationRegulationUpdated, int32, InCurrentElevationRegulation);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWindageRegulationUpdated, int32, InCurrentWindageRegulation);
 
 UCLASS()
 class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
@@ -54,6 +56,12 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UInputAction> ZoomAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> ElevationRegulationAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> WindageRegulationAction;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float StandingWalkSpeed = 180.f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -64,7 +72,7 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
     TSubclassOf<USniperAimingWidget> AimingWidgetClass;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SniperZoom, meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SniperRifle, meta = (AllowPrivateAccess = "true"))
     TArray<int32> ZoomLevels;
 
     UPROPERTY()
@@ -85,6 +93,12 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float CurrentTargetDistance = 0;
 
+    int32 CurrentElevationLevel = 0;
+    int32 CurrentWindageLevel = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SniperRifle, meta = (AllowPrivateAccess = "true"))
+    float ClickAngle;
+
 public:
     ASniperPlayer();
 
@@ -104,6 +118,8 @@ protected:
     void StartAiming(const FInputActionValue& Value);
     void StopAiming(const FInputActionValue& Value);
     void Zoom(const FInputActionValue& Value);
+    void RegolateElevation(const FInputActionValue& Value);
+    void RegolateWindage(const FInputActionValue& Value);
 
     void SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState);
     void SwitchToDefaultView();
@@ -117,7 +133,13 @@ public:
     FOnZoomLevelUpdated OnZoomLevelUpdated;
     UPROPERTY(BlueprintAssignable)
     FOnTargetDistandceUpdated OnTargetDistandceUpdated;
+    UPROPERTY(BlueprintAssignable)
+    FOnElevationRegulationUpdated OnElevationRegulationUpdated;
+    UPROPERTY(BlueprintAssignable)
+    FOnWindageRegulationUpdated OnWindageRegulationUpdated;
 
     FORCEINLINE int32 GetCurrentZoomLevel() { return ZoomLevels[CurrentZoomIndex]; }
     FORCEINLINE float GetCurrentTargetDistance() { return CurrentTargetDistance; }
+    FORCEINLINE int32 GetCurrentElevationLevel() { return CurrentElevationLevel; }
+    FORCEINLINE int32 GetCurrentWindageLevel() { return CurrentWindageLevel; }
 };
