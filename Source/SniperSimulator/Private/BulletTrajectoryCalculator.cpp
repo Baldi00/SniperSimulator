@@ -16,7 +16,7 @@ void UBulletTrajectoryCalculator::ComputeTrajectory(TArray<FVector>& OutPosition
     for (float CurrentTime = 0; CurrentTime < Parameters.SimulationTime; CurrentTime += Parameters.SimulationTimeInterval)
     {
         //if (FMath::Fmod(CurrentPosition.X, 100) > 0.5f && FMath::Fmod(CurrentPosition.X, 100) < 1.5f)
-            //UABDebug::Log(GEngine->GetWorld(), CurrentPosition.ToString(), __LINE__, FString(__FUNCTION__));
+            //LOG(CurrentPosition.ToString());
 
         // Result
         Res.Add(Parameters.InitialPosition + Parameters.RifleRotation.RotateVector(CurrentPosition * 100));

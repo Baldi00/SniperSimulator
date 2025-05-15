@@ -1,7 +1,7 @@
 #pragma once
 
 #define STRF(...) FString::Printf(L ## __VA_ARGS__)
-#define LOG(ToLog) UABDebug::Log(this, ToLog, __LINE__, FString(__FUNCTION__))
+#define LOG(ToLog) UABDebug::Log(GEngine->GetWorld(), ToLog, __LINE__, FString(__FUNCTION__))
 #define LOGF(...) LOG(STRF(__VA_ARGS__))
 
 #define CLIENT_OR_SERVER_DEBUG FString ClientOrServerDebug = UABDebug::GetClientOrServerDebugString(GetWorld())
