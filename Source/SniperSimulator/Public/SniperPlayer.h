@@ -159,7 +159,10 @@ protected:
     void ShootingEnded();
     void ShootingEndedKillcam();
 
-    void StartKillcam();
+    void StartKillcam(float Duration);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_PlayShootSound();
 
 public:
     UPROPERTY(BlueprintAssignable)

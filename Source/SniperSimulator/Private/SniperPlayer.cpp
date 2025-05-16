@@ -306,6 +306,8 @@ void ASniperPlayer::Shoot(const FInputActionValue& Value)
     if (SpawnedBulletActor != nullptr)
         SpawnedBulletActor->Destroy();
 
+    BP_PlayShootSound();
+    
     GameState->SaveShootData();
 
     SpawnedBulletActor = GetWorld()->SpawnActor<ABullet>(BulletActorClass, AimingCameraComponent->GetComponentLocation(), GetControlRotation());
@@ -322,7 +324,7 @@ void ASniperPlayer::Shoot(const FInputActionValue& Value)
     BulletShootingTimer = 0;
     BulletShootingDuration = ShootingTimerDuration;
     SetIsShooting(true);
-    StartKillcam();
+    StartKillcam(ShootingTimerDuration);
 }
 
 void ASniperPlayer::ShowShootingTable(const FInputActionValue& Value)
@@ -423,10 +425,10 @@ void ASniperPlayer::ShootingEndedKillcam()
     ShootingEnded();
 }
 
-void ASniperPlayer::StartKillcam()
+void ASniperPlayer::StartKillcam(float Duration)
 {
     bIsInKillcam = true;
-    UGameplayStatics::SetGlobalTimeDilation(this, 0.25f);
+    UGameplayStatics::SetGlobalTimeDilation(this, Duration * 0.25f);
     HideShootingTable(FInputActionValue());
     SwitchToDefaultView();
     UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(SpawnedBulletActor);
