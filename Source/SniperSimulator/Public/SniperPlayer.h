@@ -62,6 +62,12 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UInputAction> WindageRegulationAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> ShootAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> ShowShootingTableAction;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float StandingWalkSpeed = 180.f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -72,6 +78,9 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
     TSubclassOf<USniperAimingWidget> AimingWidgetClass;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<UUserWidget> ShootingTableWidgetClass;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SniperRifle, meta = (AllowPrivateAccess = "true"))
     TArray<int32> ZoomLevels;
 
@@ -79,6 +88,8 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     TObjectPtr<USniperPlayerAnimInstance> Animator = nullptr;
     UPROPERTY()
     TObjectPtr<USniperAimingWidget> AimingWidget = nullptr;
+    UPROPERTY()
+    TObjectPtr<UUserWidget> ShootingTableWidget = nullptr;
 
     bool bIsAiming = false;
     EPlayerPoseState PlayerState = EPlayerPoseState::STANDING;
@@ -120,6 +131,9 @@ protected:
     void Zoom(const FInputActionValue& Value);
     void RegolateElevation(const FInputActionValue& Value);
     void RegolateWindage(const FInputActionValue& Value);
+    void Shoot(const FInputActionValue& Value);
+    void ShowShootingTable(const FInputActionValue& Value);
+    void HideShootingTable(const FInputActionValue& Value);
 
     void SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState);
     void SwitchToDefaultView();
@@ -129,6 +143,9 @@ protected:
     FORCEINLINE float GetCurrentZoomFieldOfView() { return FMath::RadiansToDegrees(2 * FMath::Atan(FMath::Tan(FMath::DegreesToRadians(OriginalFov / 2)) / ZoomLevels[CurrentZoomIndex])); }
 
 public:
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_Shoot();
+
     UPROPERTY(BlueprintAssignable)
     FOnZoomLevelUpdated OnZoomLevelUpdated;
     UPROPERTY(BlueprintAssignable)

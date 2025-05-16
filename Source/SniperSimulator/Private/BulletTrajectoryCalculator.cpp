@@ -1,12 +1,10 @@
 #include "BulletTrajectoryCalculator.h"
-#include "ABDebug.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "ABMath.h"
 
-void UBulletTrajectoryCalculator::ComputeTrajectory(TArray<FVector>& OutPositions, FBulletTrajectoryParameters Parameters)
+void UBulletTrajectoryCalculator::ComputeTrajectory(TArray<FVector>& OutPositions, const FBulletTrajectoryParameters& Parameters)
 {
-    TArray<FVector> Res;
-
-    //OutPositions.Empty();
-    //OutPositions.SetNum(Parameters.SimulationTime / Parameters.SimulationTimeInterval + 1);
+    OutPositions.SetNum(Parameters.SimulationTime / Parameters.SimulationTimeInterval + 1);
 
     FVector InitialPosition = FVector::ZeroVector;
     FVector CurrentPosition = InitialPosition;
@@ -15,11 +13,8 @@ void UBulletTrajectoryCalculator::ComputeTrajectory(TArray<FVector>& OutPosition
     int32 CurrentComputedPosition = 0;
     for (float CurrentTime = 0; CurrentTime < Parameters.SimulationTime; CurrentTime += Parameters.SimulationTimeInterval)
     {
-        //if (FMath::Fmod(CurrentPosition.X, 100) > 0.5f && FMath::Fmod(CurrentPosition.X, 100) < 1.5f)
-            //LOG(CurrentPosition.ToString());
-
         // Result
-        Res.Add(Parameters.InitialPosition + Parameters.RifleRotation.RotateVector(CurrentPosition * 100));
+        OutPositions[CurrentComputedPosition] = Parameters.InitialPosition + Parameters.RifleRotation.RotateVector(CurrentPosition * 100);
         CurrentComputedPosition++;
 
         float Speed = CurrentVelocity.Length();
@@ -47,6 +42,67 @@ void UBulletTrajectoryCalculator::ComputeTrajectory(TArray<FVector>& OutPosition
         Deviation *= FMath::Sin(FMath::DegreesToRadians(Parameters.WindAngle));
         CurrentPosition.Y = Deviation;
     }
+}
 
-    OutPositions = Res;
+FVector UBulletTrajectoryCalculator::GetPositionAtTime(const TArray<FVector>& Positions, const float SimulationTimeInterval, const float Time)
+{
+    float PositionIndex = Time / SimulationTimeInterval;
+    if (FMath::FloorToInt(PositionIndex) == 0)
+        return FMath::Lerp(Positions[0], Positions[1], PositionIndex);
+    return FMath::Lerp(Positions[FMath::FloorToInt(PositionIndex)], Positions[FMath::CeilToInt(PositionIndex)], FMath::Fmod(PositionIndex, FMath::FloorToInt(PositionIndex)));
+}
+
+FTrajectoryPointData UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(const TArray<FVector>& Positions, const FVector& InitialPosition, const FRotator& RifleRotation, const float SimulationTimeInterval, const float Distance)
+{
+    for (int i = 1; i < Positions.Num(); i++)
+    {
+        float DistanceSquared1 = FVector::DistSquared(InitialPosition, Positions[i - 1]);
+        float DistanceSquared2 = FVector::DistSquared(InitialPosition, Positions[i]);
+        if (DistanceSquared1 <= Distance * Distance && DistanceSquared2 >= Distance * Distance)
+        {
+            FTrajectoryPointData Result{};
+            float Interpolator = UABMath::InverseLerp(FMath::Sqrt(DistanceSquared1), FMath::Sqrt(DistanceSquared2), Distance);
+            Result.Point = FMath::Lerp(Positions[i - 1], Positions[i], Interpolator);
+            Result.TimeOfFlight = FMath::Lerp(SimulationTimeInterval * (i - 1), SimulationTimeInterval * i, Interpolator);
+
+            if (Distance <= 0)
+                Result.SuggestedElevationClicks = 0;
+            else
+                Result.SuggestedElevationClicks = FMath::RoundToInt(FMath::RadiansToDegrees(FMath::Atan((InitialPosition.Z - Result.Point.Z) / Distance)) / 0.0057f); // Atan(0.01/100) * RadToDeg = 0.0057f, base click for 1cm at 100m
+
+            FVector ShootForwardVector = FRotationMatrix(RifleRotation).GetScaledAxis(EAxis::X);
+
+            FVector CurrentPointDifference = Result.Point - InitialPosition;
+            CurrentPointDifference.Z = InitialPosition.Z;
+            CurrentPointDifference = CurrentPointDifference.GetSafeNormal() * (CurrentPointDifference.Length() + 10000); // Correction of 100m, I don't know why it's needed
+            ShootForwardVector *= CurrentPointDifference.Length();
+            
+            float Deviation = 0;
+            if (Distance > 20000) // Wrong numbers at short distances
+                Deviation = CurrentPointDifference.Length() * FMath::Sin(FMath::DegreesToRadians(UABMath::AngleBetweenVectors(ShootForwardVector, CurrentPointDifference)));
+
+            if (Distance <= 0)
+                Result.SuggestedWindageClicks = 0;
+            else
+                Result.SuggestedWindageClicks = FMath::RoundToInt(FMath::RadiansToDegrees(FMath::Atan(Deviation / Distance)) / 0.0057f);
+
+            return Result;
+        }
+    }
+    return FTrajectoryPointData();
+}
+
+bool UBulletTrajectoryCalculator::GetImpactPoint(const UObject* WorldContextObject, const TArray<FVector>& Positions, FVector& ImpactPoint)
+{
+    TArray<AActor*> Ignored;
+    FHitResult HitResult;
+    for (int i = 1; i < Positions.Num(); i++)
+    {
+        if (UKismetSystemLibrary::LineTraceSingle(WorldContextObject, Positions[i - 1], Positions[i], ETraceTypeQuery::TraceTypeQuery1, false, Ignored, EDrawDebugTrace::None, HitResult, true))
+        {
+            ImpactPoint = HitResult.ImpactPoint;
+            return true;
+        }
+    }
+    return false;
 }

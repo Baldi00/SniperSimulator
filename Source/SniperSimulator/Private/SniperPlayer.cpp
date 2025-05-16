@@ -103,6 +103,9 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
         EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ASniperPlayer::Zoom);
         EnhancedInputComponent->BindAction(ElevationRegulationAction, ETriggerEvent::Triggered, this, &ASniperPlayer::RegolateElevation);
         EnhancedInputComponent->BindAction(WindageRegulationAction, ETriggerEvent::Triggered, this, &ASniperPlayer::RegolateWindage);
+        EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &ASniperPlayer::Shoot);
+        EnhancedInputComponent->BindAction(ShowShootingTableAction, ETriggerEvent::Started, this, &ASniperPlayer::ShowShootingTable);
+        EnhancedInputComponent->BindAction(ShowShootingTableAction, ETriggerEvent::Completed, this, &ASniperPlayer::HideShootingTable);
     }
 }
 
@@ -224,9 +227,9 @@ void ASniperPlayer::RegolateElevation(const FInputActionValue& Value)
     const float Input = Value.Get<float>();
 
     if (Input > 0)
-        CurrentElevationLevel++;
-    else if (Input < 0)
         CurrentElevationLevel--;
+    else if (Input < 0)
+        CurrentElevationLevel++;
 
     AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle, CurrentWindageLevel * ClickAngle, 0));
     OnElevationRegulationUpdated.Broadcast(CurrentElevationLevel);
@@ -240,12 +243,31 @@ void ASniperPlayer::RegolateWindage(const FInputActionValue& Value)
     const float Input = Value.Get<float>();
 
     if (Input > 0)
-        CurrentWindageLevel++;
-    else if (Input < 0)
         CurrentWindageLevel--;
+    else if (Input < 0)
+        CurrentWindageLevel++;
 
     AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle, CurrentWindageLevel * ClickAngle, 0));
     OnWindageRegulationUpdated.Broadcast(CurrentWindageLevel);
+}
+
+void ASniperPlayer::Shoot(const FInputActionValue& Value)
+{
+    if (!bIsAiming)
+        return;
+    BP_Shoot();
+}
+
+void ASniperPlayer::ShowShootingTable(const FInputActionValue& Value)
+{
+    ShootingTableWidget = CreateWidget<UUserWidget>(GetWorld(), ShootingTableWidgetClass);
+    ShootingTableWidget->AddToViewport(100);
+}
+
+void ASniperPlayer::HideShootingTable(const FInputActionValue& Value)
+{
+    if (ShootingTableWidget != nullptr)
+        ShootingTableWidget->RemoveFromParent();
 }
 
 void ASniperPlayer::SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState)

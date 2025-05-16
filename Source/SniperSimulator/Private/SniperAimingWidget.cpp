@@ -65,10 +65,20 @@ void USniperAimingWidget::UpdateZoomLevel(int32 NewZoomLevel)
 
 void USniperAimingWidget::UpdateElevation(int32 NewElevation)
 {
-    Elevation->SetText(FText::FromString(FString::Printf(TEXT("%d clicks"), NewElevation)));
+    if (NewElevation > 0)
+        Elevation->SetText(FText::FromString(FString::Printf(TEXT("%d down clicks"), FMath::Abs(NewElevation))));
+    else if (NewElevation < 0)
+        Elevation->SetText(FText::FromString(FString::Printf(TEXT("%d up clicks"), FMath::Abs(NewElevation))));
+    else
+        Elevation->SetText(FText::FromString(TEXT("0 clicks")));
 }
 
 void USniperAimingWidget::UpdateWindCorrection(int32 NewWindCorrection)
 {
-    WindCorrection->SetText(FText::FromString(FString::Printf(TEXT("%d clicks"), NewWindCorrection)));
+    if (NewWindCorrection > 0)
+        WindCorrection->SetText(FText::FromString(FString::Printf(TEXT("%d left clicks"), FMath::Abs(NewWindCorrection))));
+    else if (NewWindCorrection < 0)
+        WindCorrection->SetText(FText::FromString(FString::Printf(TEXT("%d right clicks"), FMath::Abs(NewWindCorrection))));
+    else
+        WindCorrection->SetText(FText::FromString(TEXT("0 clicks")));
 }
