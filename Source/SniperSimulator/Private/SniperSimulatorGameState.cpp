@@ -53,6 +53,12 @@ void ASniperSimulatorGameState::ComputeImpactPoint()
     bIsImpactPointValid = UBulletTrajectoryCalculator::GetImpactPoint(this, CurrentTrajectory, ImpactPoint);
 }
 
+void ASniperSimulatorGameState::SaveShootData()
+{
+    ShootedTrajectory = CurrentTrajectory;
+    bIsShootedImpactPointValid = UBulletTrajectoryCalculator::GetImpactPoint(this, ShootedTrajectory, ShootedImpactPoint);
+}
+
 void ASniperSimulatorGameState::ComputeTrajectoryParameters()
 {
     ComputeBulletParameters();

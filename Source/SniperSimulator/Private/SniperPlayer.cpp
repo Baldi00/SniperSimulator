@@ -96,6 +96,17 @@ void ASniperPlayer::Tick(float DeltaTime)
             GameState->ComputeImpactPoint();
         }
     }
+
+    if (bIsShooting)
+    {
+        if (BulletShootingTimer >= BulletShootingDuration)
+            ShootingEnded();
+        else
+        {
+            UpdateSpawnedBulletTransform(BulletShootingTimer);
+            BulletShootingTimer += DeltaTime;
+        }
+    }
 }
 
 void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -262,9 +273,28 @@ void ASniperPlayer::RegolateWindage(const FInputActionValue& Value)
 
 void ASniperPlayer::Shoot(const FInputActionValue& Value)
 {
-    if (!bIsAiming)
+    if (!bIsAiming || bIsShooting)
         return;
-    BP_Shoot();
+
+    if (SpawnedBulletActor != nullptr)
+        SpawnedBulletActor->Destroy();
+
+    GameState->SaveShootData();
+
+    SpawnedBulletActor = GetWorld()->SpawnActor<AActor>(BulletActorClass, AimingCameraComponent->GetComponentLocation(), GetControlRotation());
+
+    float ShootingTimerDuration = GameState->GetShotSimulationTimeSeconds();
+    if (GameState->IsShootedImpactPointValid())
+    {
+        ShootingTimerDuration = UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(
+            GameState->GetShootedTrajectory(), AimingCameraComponent->GetComponentLocation(), GetControlRotation(),
+            GameState->GetShotSimulationTimeIntervalSeconds(), FVector::Dist(AimingCameraComponent->GetComponentLocation(), GameState->GetShootedImpactPoint()))
+            .TimeOfFlight;
+    }
+
+    BulletShootingTimer = 0;
+    BulletShootingDuration = ShootingTimerDuration;
+    SetIsShooting(true);
 }
 
 void ASniperPlayer::ShowShootingTable(const FInputActionValue& Value)
@@ -316,4 +346,20 @@ void ASniperPlayer::SwitchToAimingView()
         AimingWidget->AddToViewport();
     }
     GetMesh()->SetVisibility(false, true);
+}
+
+void ASniperPlayer::UpdateSpawnedBulletTransform(float Time)
+{
+    if (SpawnedBulletActor != nullptr)
+        SpawnedBulletActor->SetActorLocation(UBulletTrajectoryCalculator::GetPositionAtTime(GameState->GetShootedTrajectory(), GameState->GetShotSimulationTimeIntervalSeconds(), Time));
+}
+
+void ASniperPlayer::ShootingEnded()
+{
+    SetIsShooting(false);
+    if (SpawnedBulletActor != nullptr)
+    {
+        SpawnedBulletActor->Destroy();
+        SpawnedBulletActor = nullptr;
+    }
 }

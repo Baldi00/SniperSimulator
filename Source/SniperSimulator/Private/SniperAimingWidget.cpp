@@ -75,6 +75,15 @@ int32 USniperAimingWidget::NativePaint(const FPaintArgs& Args, const FGeometry& 
             UWidgetBlueprintLibrary::DrawLine(Context, StartViewport, EndViewport, FLinearColor(0.25f, 0.25f, 0.25f, 0.5f));
     }
 
+    if (SniperPlayer->GetSpawnedBulletActor() != nullptr)
+    {
+        if (PlayerController->ProjectWorldLocationToScreen(SniperPlayer->GetSpawnedBulletActor()->GetActorLocation(), StartScreen))
+        {
+            USlateBlueprintLibrary::ScreenToViewport(PlayerController, StartScreen, StartViewport);
+            UWidgetBlueprintLibrary::DrawLine(Context, StartViewport, StartViewport-FVector2D(0,3), FLinearColor::White, true, 3);
+        }
+    }
+
     return Result;
 }
 

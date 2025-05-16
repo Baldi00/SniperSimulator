@@ -66,12 +66,14 @@ class SNIPERSIMULATOR_API ASniperSimulatorGameState : public AGameStateBase
 	UPROPERTY(VisibleAnywhere)
 	TArray<FShootingTableRow> ShootingTable;
 	TArray<FVector> CurrentTrajectory;
+	TArray<FVector> ShootedTrajectory;
 	FVector ImpactPoint;
+	FVector ShootedImpactPoint;
+	bool bIsImpactPointValid = false;
+	bool bIsShootedImpactPointValid = false;
 
 	float WindSpeedNoise = 0;
 	float WindAngleNoise = 0;
-
-	bool bIsImpactPointValid = false;
 
 public:
 	ASniperSimulatorGameState();
@@ -97,13 +99,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE TArray<FShootingTableRow>& GetShootingTable() { return ShootingTable; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FORCEINLINE TArray<FVector>& GetCurrentTrajectory() { return CurrentTrajectory; }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE TArray<FVector>& GetShootedTrajectory() { return ShootedTrajectory; }
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE FVector& GetImpactPoint() { return ImpactPoint; }
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsImpactPointValid() const { return bIsImpactPointValid; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE FVector& GetShootedImpactPoint() { return ShootedImpactPoint; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsShootedImpactPointValid() const { return bIsShootedImpactPointValid; }
+
+	void SaveShootData();
+
+	FORCEINLINE float GetShotSimulationTimeIntervalSeconds() const { return ShotSimulationTimeIntervalSeconds; }
+	FORCEINLINE float GetShotSimulationTimeSeconds() const { return ShotSimulationTimeSeconds; }
 
 private:
 	void ComputeTrajectoryParameters();

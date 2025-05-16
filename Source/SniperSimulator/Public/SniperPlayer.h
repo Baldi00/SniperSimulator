@@ -93,6 +93,7 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     TObjectPtr<UUserWidget> ShootingTableWidget = nullptr;
 
     bool bIsAiming = false;
+    bool bIsShooting = false;
     EPlayerPoseState PlayerState = EPlayerPoseState::STANDING;
     FTimerHandle DefaultToAimingTimerHandler;
     TObjectPtr<ASniperSimulatorGameState> GameState;
@@ -111,6 +112,14 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SniperRifle, meta = (AllowPrivateAccess = "true"))
     float ClickAngle;
+
+    UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<AActor> BulletActorClass = nullptr;
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<AActor> SpawnedBulletActor = nullptr;
+
+    float BulletShootingTimer = 0;
+    float BulletShootingDuration = 0;
 
 public:
     ASniperPlayer();
@@ -144,10 +153,10 @@ protected:
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FORCEINLINE float GetCurrentZoomFieldOfView() { return FMath::RadiansToDegrees(2 * FMath::Atan(FMath::Tan(FMath::DegreesToRadians(OriginalFov / 2)) / ZoomLevels[CurrentZoomIndex])); }
 
-public:
-    UFUNCTION(BlueprintImplementableEvent)
-    void BP_Shoot();
+    void UpdateSpawnedBulletTransform(float Time);
+    void ShootingEnded();
 
+public:
     UPROPERTY(BlueprintAssignable)
     FOnZoomLevelUpdated OnZoomLevelUpdated;
     UPROPERTY(BlueprintAssignable)
@@ -161,4 +170,7 @@ public:
     FORCEINLINE float GetCurrentTargetDistance() { return CurrentTargetDistance; }
     FORCEINLINE int32 GetCurrentElevationLevel() { return CurrentElevationLevel; }
     FORCEINLINE int32 GetCurrentWindageLevel() { return CurrentWindageLevel; }
+
+    FORCEINLINE void SetIsShooting(bool bInIsShooting) { bIsShooting = bInIsShooting; }
+    FORCEINLINE AActor* GetSpawnedBulletActor() { return SpawnedBulletActor; }
 };
