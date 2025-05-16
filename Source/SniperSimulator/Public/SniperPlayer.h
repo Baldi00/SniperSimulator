@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "EnhancedInputComponent.h"
 #include "EPlayerPoseState.h"
+#include "Bullet.h"
 #include "SniperPlayer.generated.h"
 
 class USpringArmComponent;
@@ -94,6 +95,7 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
 
     bool bIsAiming = false;
     bool bIsShooting = false;
+    bool bIsInKillcam = false;
     EPlayerPoseState PlayerState = EPlayerPoseState::STANDING;
     FTimerHandle DefaultToAimingTimerHandler;
     TObjectPtr<ASniperSimulatorGameState> GameState;
@@ -114,9 +116,9 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     float ClickAngle;
 
     UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    TSubclassOf<AActor> BulletActorClass = nullptr;
+    TSubclassOf<ABullet> BulletActorClass = nullptr;
     UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    TObjectPtr<AActor> SpawnedBulletActor = nullptr;
+    TObjectPtr<ABullet> SpawnedBulletActor = nullptr;
 
     float BulletShootingTimer = 0;
     float BulletShootingDuration = 0;
@@ -155,6 +157,9 @@ protected:
 
     void UpdateSpawnedBulletTransform(float Time);
     void ShootingEnded();
+    void ShootingEndedKillcam();
+
+    void StartKillcam();
 
 public:
     UPROPERTY(BlueprintAssignable)

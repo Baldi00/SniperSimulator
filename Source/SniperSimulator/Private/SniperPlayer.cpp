@@ -9,6 +9,7 @@
 #include "SniperAimingWidget.h"
 #include "SniperSimulatorGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include <ABDebug.h>
 
 ASniperPlayer::ASniperPlayer()
 {
@@ -131,6 +132,9 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void ASniperPlayer::Move(const FInputActionValue& Value)
 {
+    if (bIsInKillcam)
+        return;
+
     const FVector2D MovementVector = Value.Get<FVector2D>();
 
     if (Controller != nullptr)
@@ -155,6 +159,9 @@ void ASniperPlayer::StopMoving(const FInputActionValue& Value)
 
 void ASniperPlayer::Look(const FInputActionValue& Value)
 {
+    if (bIsInKillcam)
+        return;
+
     const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
     float Sensitivity = 1;
@@ -170,6 +177,9 @@ void ASniperPlayer::Look(const FInputActionValue& Value)
 
 void ASniperPlayer::ToggleCrouching(const FInputActionValue& Value)
 {
+    if (bIsInKillcam)
+        return;
+
     switch (PlayerState)
     {
     case EPlayerPoseState::STANDING:
@@ -188,6 +198,9 @@ void ASniperPlayer::ToggleCrouching(const FInputActionValue& Value)
 
 void ASniperPlayer::ToggleProne(const FInputActionValue& Value)
 {
+    if (bIsInKillcam)
+        return;
+
     switch (PlayerState)
     {
     case EPlayerPoseState::STANDING:
@@ -204,8 +217,15 @@ void ASniperPlayer::ToggleProne(const FInputActionValue& Value)
 
 void ASniperPlayer::StartAiming(const FInputActionValue& Value)
 {
+    if (bIsAiming)
+        return;
+
     bIsAiming = true;
     Animator->bIsAiming = bIsAiming;
+
+    if (bIsInKillcam)
+        return;
+
     FHitResult UnusedHit;
     GetCharacterMovement()->SafeMoveUpdatedComponent(FVector::ZeroVector, FRotator(0, GetControlRotation().Yaw, 0), false, UnusedHit);
     UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(AimingCameraActor->GetChildActor(), 0.2f);
@@ -214,9 +234,16 @@ void ASniperPlayer::StartAiming(const FInputActionValue& Value)
 
 void ASniperPlayer::StopAiming(const FInputActionValue& Value)
 {
+    if (!bIsAiming)
+        return;
+
     GetWorldTimerManager().ClearTimer(DefaultToAimingTimerHandler);
     bIsAiming = false;
     Animator->bIsAiming = bIsAiming;
+
+    if (bIsInKillcam)
+        return;
+
     FHitResult UnusedHit;
     GetCharacterMovement()->SafeMoveUpdatedComponent(FVector::ZeroVector, FRotator(0, GetControlRotation().Yaw, 0), false, UnusedHit);
     SwitchToDefaultView();
@@ -225,7 +252,7 @@ void ASniperPlayer::StopAiming(const FInputActionValue& Value)
 
 void ASniperPlayer::Zoom(const FInputActionValue& Value)
 {
-    if (!bIsAiming)
+    if (!bIsAiming || bIsInKillcam)
         return;
 
     const float Input = Value.Get<float>();
@@ -241,7 +268,7 @@ void ASniperPlayer::Zoom(const FInputActionValue& Value)
 
 void ASniperPlayer::RegolateElevation(const FInputActionValue& Value)
 {
-    if (!bIsAiming)
+    if (!bIsAiming || bIsInKillcam)
         return;
 
     const float Input = Value.Get<float>();
@@ -257,7 +284,7 @@ void ASniperPlayer::RegolateElevation(const FInputActionValue& Value)
 
 void ASniperPlayer::RegolateWindage(const FInputActionValue& Value)
 {
-    if (!bIsAiming)
+    if (!bIsAiming || bIsInKillcam)
         return;
 
     const float Input = Value.Get<float>();
@@ -273,7 +300,7 @@ void ASniperPlayer::RegolateWindage(const FInputActionValue& Value)
 
 void ASniperPlayer::Shoot(const FInputActionValue& Value)
 {
-    if (!bIsAiming || bIsShooting)
+    if (!bIsAiming || bIsShooting || bIsInKillcam)
         return;
 
     if (SpawnedBulletActor != nullptr)
@@ -281,7 +308,7 @@ void ASniperPlayer::Shoot(const FInputActionValue& Value)
 
     GameState->SaveShootData();
 
-    SpawnedBulletActor = GetWorld()->SpawnActor<AActor>(BulletActorClass, AimingCameraComponent->GetComponentLocation(), GetControlRotation());
+    SpawnedBulletActor = GetWorld()->SpawnActor<ABullet>(BulletActorClass, AimingCameraComponent->GetComponentLocation(), GetControlRotation());
 
     float ShootingTimerDuration = GameState->GetShotSimulationTimeSeconds();
     if (GameState->IsShootedImpactPointValid())
@@ -295,10 +322,13 @@ void ASniperPlayer::Shoot(const FInputActionValue& Value)
     BulletShootingTimer = 0;
     BulletShootingDuration = ShootingTimerDuration;
     SetIsShooting(true);
+    StartKillcam();
 }
 
 void ASniperPlayer::ShowShootingTable(const FInputActionValue& Value)
 {
+    if (bIsShooting || bIsInKillcam)
+        return;
     ShootingTableWidget = CreateWidget<UUserWidget>(GetWorld(), ShootingTableWidgetClass);
     ShootingTableWidget->AddToViewport(100);
 }
@@ -335,12 +365,16 @@ void ASniperPlayer::SwitchToDefaultView()
 {
     GetMesh()->SetVisibility(true, true);
     if (AimingWidget != nullptr)
+    {
         AimingWidget->RemoveFromParent();
+        AimingWidget = nullptr;
+    }
 }
 
 void ASniperPlayer::SwitchToAimingView()
 {
-    if (AimingWidgetClass)
+    GetWorldTimerManager().ClearTimer(DefaultToAimingTimerHandler);
+    if (AimingWidgetClass && AimingWidget == nullptr)
     {
         AimingWidget = CreateWidget<USniperAimingWidget>(GetWorld(), AimingWidgetClass);
         AimingWidget->AddToViewport();
@@ -356,10 +390,44 @@ void ASniperPlayer::UpdateSpawnedBulletTransform(float Time)
 
 void ASniperPlayer::ShootingEnded()
 {
-    SetIsShooting(false);
-    if (SpawnedBulletActor != nullptr)
+    if (bIsInKillcam)
     {
-        SpawnedBulletActor->Destroy();
-        SpawnedBulletActor = nullptr;
+        UGameplayStatics::SetGlobalTimeDilation(this, 1);
+        SpawnedBulletActor->BP_HideMeshAndStopCamera();
+        FTimerHandle Unused;
+        GetWorldTimerManager().SetTimer(Unused, this, &ASniperPlayer::ShootingEndedKillcam, 2);
     }
+    else
+    {
+        SetIsShooting(false);
+        if (SpawnedBulletActor != nullptr)
+        {
+            SpawnedBulletActor->Destroy();
+            SpawnedBulletActor = nullptr;
+        }
+    }
+}
+
+void ASniperPlayer::ShootingEndedKillcam()
+{
+    bIsInKillcam = false;
+    if (bIsAiming)
+    {
+        UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(AimingCameraActor->GetChildActor());
+        SwitchToAimingView();
+    }
+    else
+    {
+        UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(this);
+    }
+    ShootingEnded();
+}
+
+void ASniperPlayer::StartKillcam()
+{
+    bIsInKillcam = true;
+    UGameplayStatics::SetGlobalTimeDilation(this, 0.25f);
+    HideShootingTable(FInputActionValue());
+    SwitchToDefaultView();
+    UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(SpawnedBulletActor);
 }
