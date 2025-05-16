@@ -12,6 +12,7 @@ class UInputMappingContext;
 class UInputAction;
 class USniperPlayerAnimInstance;
 class USniperAimingWidget;
+class ASniperSimulatorGameState;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnZoomLevelUpdated, int32, InCurrentZoomLevel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDistandceUpdated, float, InCurrentTargetDistance);
@@ -94,6 +95,7 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     bool bIsAiming = false;
     EPlayerPoseState PlayerState = EPlayerPoseState::STANDING;
     FTimerHandle DefaultToAimingTimerHandler;
+    TObjectPtr<ASniperSimulatorGameState> GameState;
 
     TObjectPtr<UCameraComponent> AimingCameraComponent;
 

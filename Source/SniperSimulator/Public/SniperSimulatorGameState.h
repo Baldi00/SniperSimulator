@@ -65,9 +65,13 @@ class SNIPERSIMULATOR_API ASniperSimulatorGameState : public AGameStateBase
 	FBulletTrajectoryParameters CurrentTrajectoryParameters;
 	UPROPERTY(VisibleAnywhere)
 	TArray<FShootingTableRow> ShootingTable;
+	TArray<FVector> CurrentTrajectory;
+	FVector ImpactPoint;
 
 	float WindSpeedNoise = 0;
 	float WindAngleNoise = 0;
+
+	bool bIsImpactPointValid = false;
 
 public:
 	ASniperSimulatorGameState();
@@ -84,10 +88,22 @@ public:
 	FOnWindUpdated OnWindUpdated;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	void ComputeTrajectory(TArray<FVector>& OutPositions, const FVector& InitialPosition, const FRotator& RifleRotation, const float WindSpeed, const float WindAngle);
+	void ComputeTrajectory(const FVector& InitialPosition, const FRotator& RifleRotation, const float WindSpeed, const float WindAngle);
+
+	void ComputeTrajectory(const FVector& InitialPosition, const FRotator& RifleRotation);
+
+	void ComputeImpactPoint();
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE TArray<FShootingTableRow>& GetShootingTable() { return ShootingTable; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE TArray<FVector>& GetCurrentTrajectory() { return CurrentTrajectory; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE FVector& GetImpactPoint() { return ImpactPoint; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsImpactPointValid() const { return bIsImpactPointValid; }
 
 private:
 	void ComputeTrajectoryParameters();

@@ -7,6 +7,7 @@
 #include "SniperPlayerAnimInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "SniperAimingWidget.h"
+#include "SniperSimulatorGameState.h"
 #include "Kismet/GameplayStatics.h"
 
 ASniperPlayer::ASniperPlayer()
@@ -54,6 +55,8 @@ void ASniperPlayer::BeginPlay()
     Animator = Cast<USniperPlayerAnimInstance>(GetMesh()->GetAnimInstance());
     AimingCameraComponent = AimingCameraActor->GetChildActor()->FindComponentByClass<UCameraComponent>();
     AimingCameraComponent->bConstrainAspectRatio = false;
+
+    GameState = Cast<ASniperSimulatorGameState>(UGameplayStatics::GetGameState(this));
 }
 
 void ASniperPlayer::Tick(float DeltaTime)
@@ -86,6 +89,12 @@ void ASniperPlayer::Tick(float DeltaTime)
         UKismetSystemLibrary::LineTraceSingle(this, AimingCameraComponent->GetComponentLocation(), AimingCameraComponent->GetComponentLocation() + AimingCameraComponent->GetForwardVector() * 300000, ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResult, true);
         CurrentTargetDistance = HitResult.Distance / 100;
         OnTargetDistandceUpdated.Broadcast(CurrentTargetDistance);
+
+        if (GameState)
+        {
+            GameState->ComputeTrajectory(AimingCameraComponent->GetComponentLocation(), GetControlRotation());
+            GameState->ComputeImpactPoint();
+        }
     }
 }
 

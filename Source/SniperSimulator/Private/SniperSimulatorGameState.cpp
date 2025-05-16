@@ -30,13 +30,27 @@ float ASniperSimulatorGameState::GetWindAngleRelativeToPlayer()
     return WindAngleDegrees + WindAngleNoise - PlayerAngle;
 }
 
-void ASniperSimulatorGameState::ComputeTrajectory(TArray<FVector>& OutPositions, const FVector& InitialPosition, const FRotator& RifleRotation, const float WindSpeed, const float WindAngle)
+void ASniperSimulatorGameState::ComputeTrajectory(const FVector& InitialPosition, const FRotator& RifleRotation, const float WindSpeed, const float WindAngle)
 {
     CurrentTrajectoryParameters.InitialPosition = InitialPosition;
     CurrentTrajectoryParameters.RifleRotation = RifleRotation;
     CurrentTrajectoryParameters.WindSpeed = WindSpeed;
     CurrentTrajectoryParameters.WindAngle = WindAngle;
-    UBulletTrajectoryCalculator::ComputeTrajectory(OutPositions, CurrentTrajectoryParameters);
+    UBulletTrajectoryCalculator::ComputeTrajectory(CurrentTrajectory, CurrentTrajectoryParameters);
+}
+
+void ASniperSimulatorGameState::ComputeTrajectory(const FVector& InitialPosition, const FRotator& RifleRotation)
+{
+    CurrentTrajectoryParameters.InitialPosition = InitialPosition;
+    CurrentTrajectoryParameters.RifleRotation = RifleRotation;
+    CurrentTrajectoryParameters.WindSpeed = WindSpeedMetersPerSecond;
+    CurrentTrajectoryParameters.WindAngle = GetWindAngleRelativeToPlayer();
+    UBulletTrajectoryCalculator::ComputeTrajectory(CurrentTrajectory, CurrentTrajectoryParameters);
+}
+
+void ASniperSimulatorGameState::ComputeImpactPoint()
+{
+    bIsImpactPointValid = UBulletTrajectoryCalculator::GetImpactPoint(this, CurrentTrajectory, ImpactPoint);
 }
 
 void ASniperSimulatorGameState::ComputeTrajectoryParameters()
@@ -77,9 +91,12 @@ void ASniperSimulatorGameState::ComputeShootingTable()
     TArray<FVector> TrajectoryWind30;
     TArray<FVector> TrajectoryWind60;
     TArray<FVector> TrajectoryWind90;
-    ComputeTrajectory(TrajectoryWind30, FVector::ZeroVector, FRotator::ZeroRotator, 10, 30);
-    ComputeTrajectory(TrajectoryWind60, FVector::ZeroVector, FRotator::ZeroRotator, 10, 60);
-    ComputeTrajectory(TrajectoryWind90, FVector::ZeroVector, FRotator::ZeroRotator, 10, 90);
+    ComputeTrajectory(FVector::ZeroVector, FRotator::ZeroRotator, 10, 30);
+    TrajectoryWind30 = CurrentTrajectory;
+    ComputeTrajectory(FVector::ZeroVector, FRotator::ZeroRotator, 10, 60);
+    TrajectoryWind60 = CurrentTrajectory;
+    ComputeTrajectory(FVector::ZeroVector, FRotator::ZeroRotator, 10, 90);
+    TrajectoryWind90 = CurrentTrajectory;
 
     ShootingTable.Empty();
 

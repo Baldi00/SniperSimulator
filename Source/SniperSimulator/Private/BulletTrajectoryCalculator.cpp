@@ -39,7 +39,10 @@ void UBulletTrajectoryCalculator::ComputeTrajectory(TArray<FVector>& OutPosition
 
         // Windage (Didion)
         float Deviation = WindVelocity.Length() * (CurrentTime - CurrentPosition.X / Parameters.ShootInitialSpeed);
-        Deviation *= FMath::Sin(FMath::DegreesToRadians(Parameters.WindAngle));
+        if (Deviation < 0)
+            Deviation = 0;
+        else
+            Deviation *= FMath::Sin(FMath::DegreesToRadians(Parameters.WindAngle));
         CurrentPosition.Y = Deviation;
     }
 }
@@ -76,7 +79,7 @@ FTrajectoryPointData UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistan
             CurrentPointDifference.Z = InitialPosition.Z;
             CurrentPointDifference = CurrentPointDifference.GetSafeNormal() * (CurrentPointDifference.Length() + 10000); // Correction of 100m, I don't know why it's needed
             ShootForwardVector *= CurrentPointDifference.Length();
-            
+
             float Deviation = 0;
             if (Distance > 20000) // Wrong numbers at short distances
                 Deviation = CurrentPointDifference.Length() * FMath::Sin(FMath::DegreesToRadians(UABMath::AngleBetweenVectors(ShootForwardVector, CurrentPointDifference)));
