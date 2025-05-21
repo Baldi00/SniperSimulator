@@ -7,6 +7,7 @@
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "SniperPlayer.h"
 #include "Components/CanvasPanelSlot.h"
+#include "LineDrawerWidget.h"
 
 void USniperAimingWidget::NativeConstruct()
 {
@@ -17,6 +18,7 @@ void USniperAimingWidget::NativeConstruct()
     UpdateCurrentWind(GameState->GetWindSpeed(), GameState->GetWindAngle());
     UpdateElevation(SniperPlayer->GetCurrentElevationLevel());
     UpdateWindCorrection(SniperPlayer->GetCurrentWindageLevel());
+    LineDrawerWidget->SetData(SniperPlayer, GameState, PlayerController);
 }
 
 void USniperAimingWidget::NativeDestruct()
@@ -33,7 +35,7 @@ void USniperAimingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
         ImpactPointImage->SetVisibility(ESlateVisibility::Hidden);
         return;
     }
-    
+
     ImpactPointImage->SetVisibility(ESlateVisibility::Visible);
 
     FVector2D ImpactPointScreen;
@@ -46,45 +48,6 @@ void USniperAimingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
         if (CanvasSlot)
             CanvasSlot->SetPosition(ImpactPointViewport);
     }
-}
-
-int32 USniperAimingWidget::NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
-{
-    int32 Result = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
-    if (GameState == nullptr || PlayerController == nullptr)
-        return Result;
-
-    FPaintContext Context(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
-    FVector2D StartScreen;
-    FVector2D EndScreen;
-    FVector2D StartViewport;
-    FVector2D EndViewport;
-
-    UWidgetBlueprintLibrary::DrawLine(Context, StartViewport, EndViewport, FLinearColor::Red, true, 3.f);
-
-    for (int i = 1; i < GameState->GetCurrentTrajectory().Num(); i++)
-    {
-        bool Success1 = PlayerController->ProjectWorldLocationToScreen(GameState->GetCurrentTrajectory()[i - 1], StartScreen);
-        bool Success2 = PlayerController->ProjectWorldLocationToScreen(GameState->GetCurrentTrajectory()[i], EndScreen);
-        if (!Success1 || !Success2)
-            continue;
-        USlateBlueprintLibrary::ScreenToViewport(PlayerController, StartScreen, StartViewport);
-        USlateBlueprintLibrary::ScreenToViewport(PlayerController, EndScreen, EndViewport);
-        float DistanceSquared = FVector2D::DistSquared(StartViewport, EndViewport);
-        if (DistanceSquared > 0.1 && DistanceSquared < 2500)
-            UWidgetBlueprintLibrary::DrawLine(Context, StartViewport, EndViewport, FLinearColor(0.25f, 0.25f, 0.25f, 0.5f));
-    }
-
-    if (SniperPlayer->GetSpawnedBulletActor() != nullptr)
-    {
-        if (PlayerController->ProjectWorldLocationToScreen(SniperPlayer->GetSpawnedBulletActor()->GetActorLocation(), StartScreen))
-        {
-            USlateBlueprintLibrary::ScreenToViewport(PlayerController, StartScreen, StartViewport);
-            UWidgetBlueprintLibrary::DrawLine(Context, StartViewport, StartViewport-FVector2D(0,3), FLinearColor::White, true, 3);
-        }
-    }
-
-    return Result;
 }
 
 void USniperAimingWidget::SetBindings()

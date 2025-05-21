@@ -6,6 +6,7 @@
 
 class UTextBlock;
 class UImage;
+class ULineDrawerWidget;
 class ASniperPlayer;
 class ASniperSimulatorGameState;
 
@@ -29,6 +30,9 @@ protected:
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget), DisplayName = "Wind Correction")
 	TObjectPtr<UImage> ImpactPointImage = nullptr;
 
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget), DisplayName = "Line Drawer Widget")
+	TObjectPtr<ULineDrawerWidget> LineDrawerWidget = nullptr;
+
 	ASniperPlayer* SniperPlayer = nullptr;
 	ASniperSimulatorGameState* GameState = nullptr;
 	APlayerController* PlayerController = nullptr;
@@ -37,8 +41,6 @@ protected:
 	virtual void NativeDestruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
-	virtual int32 NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 
 	void SetBindings();
 	void ResetBindings();
