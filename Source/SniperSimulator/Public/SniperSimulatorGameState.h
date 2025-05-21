@@ -62,6 +62,15 @@ class SNIPERSIMULATOR_API ASniperSimulatorGameState : public AGameStateBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
 	int32 ShootingTableStepIncrement = 10000;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
+	bool bUseKillcam = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
+	bool bShootSilenced = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
+	bool bDrawTrajectoryEnabled = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
+	bool bDrawHitPointEnabled = false;
+
 	FBulletTrajectoryParameters CurrentTrajectoryParameters;
 	UPROPERTY(VisibleAnywhere)
 	TArray<FShootingTableRow> ShootingTable;
@@ -117,6 +126,15 @@ public:
 
 	FORCEINLINE float GetShotSimulationTimeIntervalSeconds() const { return ShotSimulationTimeIntervalSeconds; }
 	FORCEINLINE float GetShotSimulationTimeSeconds() const { return ShotSimulationTimeSeconds; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetUseKillcam() const { return bUseKillcam; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsShootSilenced() const { return bUseKillcam; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsDrawTrajectoryEnabled() const { return bDrawTrajectoryEnabled; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsDrawHitPointEnabled() const { return bDrawHitPointEnabled; }
 
 private:
 	void ComputeTrajectoryParameters();

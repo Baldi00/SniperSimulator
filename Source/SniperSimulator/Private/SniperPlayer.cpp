@@ -10,6 +10,7 @@
 #include "SniperSimulatorGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include <ABDebug.h>
+#include "BulletHittableItem.h"
 
 ASniperPlayer::ASniperPlayer()
 {
@@ -262,8 +263,14 @@ void ASniperPlayer::Zoom(const FInputActionValue& Value)
     else if (Input < 0)
         CurrentZoomIndex--;
 
+    int32 UnclampedZoomIndex = CurrentZoomIndex;
     CurrentZoomIndex = FMath::Clamp(CurrentZoomIndex, 0, ZoomLevels.Num() - 1);
-    OnZoomLevelUpdated.Broadcast(ZoomLevels[CurrentZoomIndex]);
+
+    if (UnclampedZoomIndex == CurrentZoomIndex)
+    {
+        OnZoomLevelUpdated.Broadcast(ZoomLevels[CurrentZoomIndex]);
+        BP_PlayClickSound();
+    }
 }
 
 void ASniperPlayer::RegolateElevation(const FInputActionValue& Value)
@@ -279,6 +286,7 @@ void ASniperPlayer::RegolateElevation(const FInputActionValue& Value)
         CurrentElevationLevel++;
 
     AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle, CurrentWindageLevel * ClickAngle, 0));
+    BP_PlayClickSound();
     OnElevationRegulationUpdated.Broadcast(CurrentElevationLevel);
 }
 
@@ -295,6 +303,7 @@ void ASniperPlayer::RegolateWindage(const FInputActionValue& Value)
         CurrentWindageLevel++;
 
     AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle, CurrentWindageLevel * ClickAngle, 0));
+    BP_PlayClickSound();
     OnWindageRegulationUpdated.Broadcast(CurrentWindageLevel);
 }
 
@@ -308,7 +317,7 @@ void ASniperPlayer::Shoot(const FInputActionValue& Value)
 
     GameState->SaveShootData();
 
-    BP_PlayShootSound(EShotSoundType::KILLCAM);
+    BP_PlayShootSound();
     SpawnAndStartMovingBullet();
 }
 
@@ -372,7 +381,24 @@ void ASniperPlayer::SwitchToAimingView()
 void ASniperPlayer::UpdateSpawnedBulletTransform(float Time)
 {
     if (SpawnedBulletActor != nullptr)
-        SpawnedBulletActor->SetActorLocation(UBulletTrajectoryCalculator::GetPositionAtTime(GameState->GetShootedTrajectory(), GameState->GetShotSimulationTimeIntervalSeconds(), Time));
+    {
+        TArray<AActor*> Ignored;
+        FVector NextPosition = UBulletTrajectoryCalculator::GetPositionAtTime(GameState->GetShootedTrajectory(), GameState->GetShotSimulationTimeIntervalSeconds(), Time);
+        FHitResult HitResult;
+        UKismetSystemLibrary::LineTraceSingle(this, SpawnedBulletActor->GetActorLocation(), NextPosition, ETraceTypeQuery::TraceTypeQuery1, false, Ignored, EDrawDebugTrace::None, HitResult, true);
+        if (HitResult.bBlockingHit)
+        {
+            if (HitResult.GetActor()->Implements<UBulletHittableItem>())
+            {
+                IBulletHittableItem::Execute_BulletHit(HitResult.GetActor(), (NextPosition - SpawnedBulletActor->GetActorLocation()).GetSafeNormal(), bIsInKillcam);
+                if (!bIsInKillcam)
+                    BP_PlayFarHitSound();
+            }
+            ShootingEnded();
+        }
+        else
+            SpawnedBulletActor->SetActorLocation(NextPosition);
+    }
 }
 
 void ASniperPlayer::ShootingEnded()
@@ -413,7 +439,7 @@ void ASniperPlayer::ShootingEndedKillcam()
 void ASniperPlayer::StartKillcam()
 {
     bIsInKillcam = true;
-    UGameplayStatics::SetGlobalTimeDilation(this, BulletShootingDuration * 0.25f);
+    UGameplayStatics::SetGlobalTimeDilation(this, 0.25f);
     HideShootingTable(FInputActionValue());
     SwitchToDefaultView();
     UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(SpawnedBulletActor);
@@ -423,19 +449,10 @@ void ASniperPlayer::SpawnAndStartMovingBullet()
 {
     SpawnedBulletActor = GetWorld()->SpawnActor<ABullet>(BulletActorClass, AimingCameraComponent->GetComponentLocation(), GetControlRotation());
 
-    float ShootingTimerDuration = GameState->GetShotSimulationTimeSeconds();
-    if (GameState->IsShootedImpactPointValid())
-    {
-        ShootingTimerDuration = UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(
-            GameState->GetShootedTrajectory(), AimingCameraComponent->GetComponentLocation(), GetControlRotation(),
-            GameState->GetShotSimulationTimeIntervalSeconds(), FVector::Dist(AimingCameraComponent->GetComponentLocation(), GameState->GetShootedImpactPoint()))
-            .TimeOfFlight;
-    }
-
     BulletShootingTimer = 0;
-    BulletShootingDuration = ShootingTimerDuration;
+    BulletShootingDuration = GameState->GetShotSimulationTimeSeconds();
 
     SetIsShooting(true);
-    if (true)
+    if (GameState->GetUseKillcam())
         StartKillcam();
 }

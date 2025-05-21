@@ -20,14 +20,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDistandceUpdated, float, In
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnElevationRegulationUpdated, int32, InCurrentElevationRegulation);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWindageRegulationUpdated, int32, InCurrentWindageRegulation);
 
-UENUM(BlueprintType)
-enum class EShotSoundType : uint8
-{
-    DEFAULT,
-    SILENCED,
-    KILLCAM
-};
-
 UCLASS()
 class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
 {
@@ -170,7 +162,11 @@ protected:
     void StartKillcam();
 
     UFUNCTION(BlueprintImplementableEvent)
-    void BP_PlayShootSound(EShotSoundType SoundType);
+    void BP_PlayShootSound();
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_PlayFarHitSound();
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_PlayClickSound();
 
     void SpawnAndStartMovingBullet();
 

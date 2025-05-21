@@ -33,21 +33,23 @@ int32 ULineDrawerWidget::NativePaint(const FPaintArgs& Args, const FGeometry& Al
     FVector2D StartViewport;
     FVector2D EndViewport;
 
-    TArray<FVector2D> Points;
-    for (int i = 1; i < GameState->GetCurrentTrajectory().Num(); i++)
+    if (GameState->IsDrawTrajectoryEnabled())
     {
-        PlayerController->ProjectWorldLocationToScreen(GameState->GetCurrentTrajectory()[i - 1], StartScreen);
-        PlayerController->ProjectWorldLocationToScreen(GameState->GetCurrentTrajectory()[i], EndScreen);
+        TArray<FVector2D> Points;
+        for (int i = 1; i < GameState->GetCurrentTrajectory().Num(); i++)
+        {
+            PlayerController->ProjectWorldLocationToScreen(GameState->GetCurrentTrajectory()[i - 1], StartScreen);
+            PlayerController->ProjectWorldLocationToScreen(GameState->GetCurrentTrajectory()[i], EndScreen);
 
-        USlateBlueprintLibrary::ScreenToViewport(PlayerController, StartScreen, StartViewport);
-        USlateBlueprintLibrary::ScreenToViewport(PlayerController, EndScreen, EndViewport);
+            USlateBlueprintLibrary::ScreenToViewport(PlayerController, StartScreen, StartViewport);
+            USlateBlueprintLibrary::ScreenToViewport(PlayerController, EndScreen, EndViewport);
 
-        float DistanceSquared = FVector2D::DistSquared(StartViewport, EndViewport);
-        if (DistanceSquared > 0.1 && DistanceSquared < 2500)
-            Points.Add(StartViewport);
+            float DistanceSquared = FVector2D::DistSquared(StartViewport, EndViewport);
+            if (DistanceSquared > 0.1 && DistanceSquared < 2500)
+                Points.Add(StartViewport);
+        }
+        UWidgetBlueprintLibrary::DrawLines(Context, Points, FLinearColor::Red);
     }
-
-    UWidgetBlueprintLibrary::DrawLines(Context, Points, FLinearColor::Red);
 
     if (SniperPlayer != nullptr && SniperPlayer->GetSpawnedBulletActor() != nullptr)
     {
