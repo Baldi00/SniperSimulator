@@ -70,6 +70,9 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UInputAction> ShowShootingTableAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> StabilizeAimingAction;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float StandingWalkSpeed = 180.f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -96,6 +99,7 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     bool bIsAiming = false;
     bool bIsShooting = false;
     bool bIsInKillcam = false;
+    bool bIsStabilizedAiming = false;
     EPlayerPoseState PlayerState = EPlayerPoseState::STANDING;
     FTimerHandle DefaultToAimingTimerHandler;
     TObjectPtr<ASniperSimulatorGameState> GameState;
@@ -147,6 +151,7 @@ protected:
     void Shoot(const FInputActionValue& Value);
     void ShowShootingTable(const FInputActionValue& Value);
     void HideShootingTable(const FInputActionValue& Value);
+    void StabilizeAiming(const FInputActionValue& Value);
 
     void SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState);
     void SwitchToDefaultView();
@@ -167,6 +172,8 @@ protected:
     void BP_PlayFarHitSound();
     UFUNCTION(BlueprintImplementableEvent)
     void BP_PlayClickSound();
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_PlayBreathSound();
 
     void SpawnAndStartMovingBullet();
 

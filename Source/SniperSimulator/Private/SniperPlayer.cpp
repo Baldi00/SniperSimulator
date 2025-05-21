@@ -97,6 +97,28 @@ void ASniperPlayer::Tick(float DeltaTime)
             GameState->ComputeTrajectory(AimingCameraComponent->GetComponentLocation(), GetControlRotation());
             GameState->ComputeImpactPoint();
         }
+
+        if (!bIsStabilizedAiming)
+        {
+            float OscillationStrength = 0;
+            switch (PlayerState)
+            {
+            case EPlayerPoseState::STANDING:
+                OscillationStrength = 10;
+                break;
+            case EPlayerPoseState::CROUCHED:
+                OscillationStrength = 5;
+                break;
+            case EPlayerPoseState::PRONE:
+                OscillationStrength = 2;
+                break;
+            default:
+                break;
+            }
+
+            OscillationStrength *= FMath::Lerp(1.f, 10.f, (float)CurrentZoomIndex / ZoomLevels.Num());
+            AimingCameraActor->SetRelativeLocation(FVector(0, FMath::PerlinNoise1D(UGameplayStatics::GetRealTimeSeconds(this) + 17) * OscillationStrength, FMath::PerlinNoise1D(UGameplayStatics::GetRealTimeSeconds(this) + 24) * OscillationStrength));
+        }
     }
 
     if (bIsShooting)
@@ -128,6 +150,8 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
         EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &ASniperPlayer::Shoot);
         EnhancedInputComponent->BindAction(ShowShootingTableAction, ETriggerEvent::Started, this, &ASniperPlayer::ShowShootingTable);
         EnhancedInputComponent->BindAction(ShowShootingTableAction, ETriggerEvent::Completed, this, &ASniperPlayer::HideShootingTable);
+        EnhancedInputComponent->BindAction(StabilizeAimingAction, ETriggerEvent::Started, this, &ASniperPlayer::StabilizeAiming);
+        EnhancedInputComponent->BindAction(StabilizeAimingAction, ETriggerEvent::Completed, this, &ASniperPlayer::StabilizeAiming);
     }
 }
 
@@ -335,6 +359,21 @@ void ASniperPlayer::HideShootingTable(const FInputActionValue& Value)
         ShootingTableWidget->RemoveFromParent();
 }
 
+void ASniperPlayer::StabilizeAiming(const FInputActionValue& Value)
+{
+    if (!bIsAiming || bIsShooting || bIsInKillcam)
+        return;
+
+    bIsStabilizedAiming = Value.Get<bool>();
+    if (bIsStabilizedAiming)
+    {
+        BP_PlayBreathSound();
+        UGameplayStatics::SetGlobalTimeDilation(this, 0.8f);
+    }
+    else
+        UGameplayStatics::SetGlobalTimeDilation(this, 1);
+}
+
 void ASniperPlayer::SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState)
 {
     PlayerState = NewPlayerPoseState;
@@ -405,7 +444,10 @@ void ASniperPlayer::ShootingEnded()
 {
     if (bIsInKillcam)
     {
-        UGameplayStatics::SetGlobalTimeDilation(this, 1);
+        if (bIsStabilizedAiming)
+            UGameplayStatics::SetGlobalTimeDilation(this, 0.8f);
+        else
+            UGameplayStatics::SetGlobalTimeDilation(this, 1);
         SpawnedBulletActor->BP_HideMeshAndStopCamera();
         FTimerHandle Unused;
         GetWorldTimerManager().SetTimer(Unused, this, &ASniperPlayer::ShootingEndedKillcam, 2);
