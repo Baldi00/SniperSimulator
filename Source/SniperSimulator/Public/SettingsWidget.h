@@ -60,8 +60,6 @@ protected:
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> ResetButton = nullptr;
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UButton> CloseSettingsButton = nullptr;
-	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> QuitGameButton = nullptr;
 
 	ASniperPlayer* SniperPlayer = nullptr;
@@ -73,4 +71,17 @@ protected:
 
 	void SetBindings();
 	void ResetBindings();
+
+	void PopulateUI();
+
+	UFUNCTION()
+	void RandomizeWind();
+	UFUNCTION()
+	void SaveAndClose();
+	UFUNCTION()
+	void ResetSettings();
+	UFUNCTION()
+	void CloseSettings();
+	UFUNCTION()
+	void QuitGame();
 };

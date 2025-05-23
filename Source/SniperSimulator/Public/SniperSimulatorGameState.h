@@ -72,18 +72,18 @@ public:
 	float TemperatureCelsius = 15;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Wind, meta = (AllowPrivateAccess = "true"))
-	float WindSpeedMetersPerSecond = 0;
+	float WindSpeedMetersPerSecond = 5;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Wind, meta = (AllowPrivateAccess = "true"))
 	float WindAngleDegrees = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
 	bool bUseKillcam = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
-	bool bShootSilenced = false;
+	bool bShootSilenced = true;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
-	bool bDrawTrajectoryEnabled = false;
+	bool bDrawTrajectoryEnabled = true;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
-	bool bDrawHitPointEnabled = false;
+	bool bDrawHitPointEnabled = true;
 
 	ASniperSimulatorGameState();
 
@@ -136,10 +136,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsDrawHitPointEnabled() const { return bDrawHitPointEnabled; }
 
-private:
 	void ComputeTrajectoryParameters();
+	void ComputeShootingTable();
+
+private:
 	void ComputeBulletParameters();
 	void ComputeAirDensity();
 	void SetSimulationParameters();
-	void ComputeShootingTable();
 };

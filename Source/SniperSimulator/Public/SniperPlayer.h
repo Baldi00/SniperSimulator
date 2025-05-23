@@ -76,6 +76,9 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UInputAction> TeleportAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> PauseAction;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float StandingWalkSpeed = 180.f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -88,6 +91,8 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
     TSubclassOf<UUserWidget> ShootingTableWidgetClass;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<UUserWidget> SettingsPauseWidgetClass;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SniperRifle, meta = (AllowPrivateAccess = "true"))
     TArray<int32> ZoomLevels;
@@ -157,6 +162,7 @@ protected:
     void HideShootingTable(const FInputActionValue& Value);
     void StabilizeAiming(const FInputActionValue& Value);
     void TeleportLogic(const FInputActionValue& Value);
+    void PauseGame(const FInputActionValue& Value);
 
     void SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState);
     void SwitchToDefaultView();
