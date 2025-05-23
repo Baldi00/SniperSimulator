@@ -31,6 +31,31 @@ class SNIPERSIMULATOR_API ASniperSimulatorGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
+	float ShotSimulationTimeSeconds = 4;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
+	float ShotSimulationTimeIntervalSeconds = 0.02f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
+	int32 ShootingTableMin = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
+	int32 ShootingTableMax = 230000;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
+	int32 ShootingTableStepIncrement = 10000;
+
+	FBulletTrajectoryParameters CurrentTrajectoryParameters;
+	UPROPERTY(VisibleAnywhere)
+	TArray<FShootingTableRow> ShootingTable;
+	TArray<FVector> CurrentTrajectory;
+	TArray<FVector> ShootedTrajectory;
+	FVector ImpactPoint;
+	FVector ShootedImpactPoint;
+	bool bIsImpactPointValid = false;
+	bool bIsShootedImpactPointValid = false;
+
+	float WindSpeedNoise = 0;
+	float WindAngleNoise = 0;
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bullet, meta = (AllowPrivateAccess = "true"))
 	float BulletMassGrams = 48.6f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bullet, meta = (AllowPrivateAccess = "true"))
@@ -51,17 +76,6 @@ class SNIPERSIMULATOR_API ASniperSimulatorGameState : public AGameStateBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Wind, meta = (AllowPrivateAccess = "true"))
 	float WindAngleDegrees = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
-	float ShotSimulationTimeSeconds = 4;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
-	float ShotSimulationTimeIntervalSeconds = 0.02f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
-	int32 ShootingTableMin = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
-	int32 ShootingTableMax = 230000;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ShotSimulation, meta = (AllowPrivateAccess = "true"))
-	int32 ShootingTableStepIncrement = 10000;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
 	bool bUseKillcam = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
@@ -71,20 +85,6 @@ class SNIPERSIMULATOR_API ASniperSimulatorGameState : public AGameStateBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = OtherSettings, meta = (AllowPrivateAccess = "true"))
 	bool bDrawHitPointEnabled = false;
 
-	FBulletTrajectoryParameters CurrentTrajectoryParameters;
-	UPROPERTY(VisibleAnywhere)
-	TArray<FShootingTableRow> ShootingTable;
-	TArray<FVector> CurrentTrajectory;
-	TArray<FVector> ShootedTrajectory;
-	FVector ImpactPoint;
-	FVector ShootedImpactPoint;
-	bool bIsImpactPointValid = false;
-	bool bIsShootedImpactPointValid = false;
-
-	float WindSpeedNoise = 0;
-	float WindAngleNoise = 0;
-
-public:
 	ASniperSimulatorGameState();
 
 	virtual void BeginPlay() override;
