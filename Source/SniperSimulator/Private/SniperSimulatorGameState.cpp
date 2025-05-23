@@ -14,6 +14,7 @@ void ASniperSimulatorGameState::BeginPlay()
     ComputeShootingTable();
     
     SettingsManager = Cast<ASettingsManager>(UGameplayStatics::GetActorOfClass(this, ASettingsManager::StaticClass()));
+    RandomizeWind();
     UpdateHourOfDay();
     UpdateVisionMode();
 }
@@ -95,6 +96,12 @@ void ASniperSimulatorGameState::SetSimulationParameters()
 {
     CurrentTrajectoryParameters.SimulationTime = ShotSimulationTimeSeconds;
     CurrentTrajectoryParameters.SimulationTimeInterval = ShotSimulationTimeIntervalSeconds;
+}
+
+void ASniperSimulatorGameState::RandomizeWind()
+{
+    WindSpeedMetersPerSecond = FMath::RandRange(1.f, 15.f);
+    WindAngleDegrees = FMath::RandRange(-180.f, 180.f);
 }
 
 void ASniperSimulatorGameState::ComputeShootingTable()

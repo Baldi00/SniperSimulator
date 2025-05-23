@@ -169,4 +169,5 @@ private:
     void ComputeBulletParameters();
     void ComputeAirDensity();
     void SetSimulationParameters();
+    void RandomizeWind();
 };
