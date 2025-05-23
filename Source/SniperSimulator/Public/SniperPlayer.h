@@ -99,6 +99,7 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY()
     TObjectPtr<UUserWidget> ShootingTableWidget = nullptr;
 
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     bool bIsAiming = false;
     bool bIsShooting = false;
     bool bIsInKillcam = false;

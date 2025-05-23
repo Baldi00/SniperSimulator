@@ -17,4 +17,7 @@ class SNIPERSIMULATOR_API IBulletHittableItem
 public:
     UFUNCTION(BlueprintImplementableEvent)
     void BulletHit(FVector InDirection, bool bInIsKillcam);
+
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    bool IsAlreadyHit();
 };
