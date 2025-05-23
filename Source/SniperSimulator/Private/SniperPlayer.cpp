@@ -152,6 +152,7 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
         EnhancedInputComponent->BindAction(ShowShootingTableAction, ETriggerEvent::Completed, this, &ASniperPlayer::HideShootingTable);
         EnhancedInputComponent->BindAction(StabilizeAimingAction, ETriggerEvent::Started, this, &ASniperPlayer::StabilizeAiming);
         EnhancedInputComponent->BindAction(StabilizeAimingAction, ETriggerEvent::Completed, this, &ASniperPlayer::StabilizeAiming);
+        EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &ASniperPlayer::TeleportLogic);
     }
 }
 
@@ -372,6 +373,25 @@ void ASniperPlayer::StabilizeAiming(const FInputActionValue& Value)
     }
     else
         UGameplayStatics::SetGlobalTimeDilation(this, 1);
+}
+
+void ASniperPlayer::TeleportLogic(const FInputActionValue& Value)
+{
+    if (!bIsAiming || bIsShooting || bIsInKillcam)
+        return;
+
+    // Teleport
+    FHitResult HitResult;
+    UKismetSystemLibrary::LineTraceSingle(this, AimingCameraComponent->GetComponentLocation(), AimingCameraComponent->GetComponentLocation() + AimingCameraComponent->GetForwardVector() * 300000, ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResult, true);
+    if (HitResult.bBlockingHit)
+    {
+        FVector DirectionXY = AimingCameraComponent->GetForwardVector();
+        DirectionXY.Z = 0;
+        DirectionXY.Normalize();
+        UKismetSystemLibrary::LineTraceSingle(this, HitResult.ImpactPoint + FVector::UpVector * 10000 + DirectionXY * 10, HitResult.ImpactPoint + DirectionXY * 10 - FVector::UpVector * 100, ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResult, true);
+        if (HitResult.bBlockingHit)
+            SetActorLocation(HitResult.ImpactPoint + FVector::UpVector * 100);
+    }
 }
 
 void ASniperPlayer::SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState)

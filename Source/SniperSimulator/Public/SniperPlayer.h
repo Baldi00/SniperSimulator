@@ -73,6 +73,9 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UInputAction> StabilizeAimingAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> TeleportAction;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float StandingWalkSpeed = 180.f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -152,6 +155,7 @@ protected:
     void ShowShootingTable(const FInputActionValue& Value);
     void HideShootingTable(const FInputActionValue& Value);
     void StabilizeAiming(const FInputActionValue& Value);
+    void TeleportLogic(const FInputActionValue& Value);
 
     void SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState);
     void SwitchToDefaultView();
