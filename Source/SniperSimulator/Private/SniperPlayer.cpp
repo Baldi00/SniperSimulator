@@ -368,12 +368,7 @@ void ASniperPlayer::StabilizeAiming(const FInputActionValue& Value)
 
     bIsStabilizedAiming = Value.Get<bool>();
     if (bIsStabilizedAiming)
-    {
         BP_PlayBreathSound();
-        UGameplayStatics::SetGlobalTimeDilation(this, 0.8f);
-    }
-    else
-        UGameplayStatics::SetGlobalTimeDilation(this, 1);
 }
 
 void ASniperPlayer::TeleportLogic(const FInputActionValue& Value)
