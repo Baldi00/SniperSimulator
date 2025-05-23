@@ -1,5 +1,6 @@
 #include "SniperSimulatorGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "SettingsManager.h"
 
 ASniperSimulatorGameState::ASniperSimulatorGameState()
 {
@@ -11,6 +12,10 @@ void ASniperSimulatorGameState::BeginPlay()
     Super::BeginPlay();
     ComputeTrajectoryParameters();
     ComputeShootingTable();
+    
+    SettingsManager = Cast<ASettingsManager>(UGameplayStatics::GetActorOfClass(this, ASettingsManager::StaticClass()));
+    UpdateHourOfDay();
+    UpdateVisionMode();
 }
 
 void ASniperSimulatorGameState::Tick(float DeltaTime)
@@ -120,4 +125,14 @@ void ASniperSimulatorGameState::ComputeShootingTable()
         Row.WindageClicks90 = PointData.SuggestedWindageClicks;
         ShootingTable.Add(Row);
     }
+}
+
+void ASniperSimulatorGameState::UpdateHourOfDay()
+{
+    SettingsManager->SetHourOfDay(HourOfDay);
+}
+
+void ASniperSimulatorGameState::UpdateVisionMode()
+{
+    SettingsManager->SetVisionMode(VisionMode);
 }

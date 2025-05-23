@@ -40,6 +40,12 @@ void USettingsWidget::SetBindings()
     SaveButton->OnClicked.AddUniqueDynamic(this, &USettingsWidget::SaveAndClose);
     ResetButton->OnClicked.AddUniqueDynamic(this, &USettingsWidget::ResetSettings);
     QuitGameButton->OnClicked.AddUniqueDynamic(this, &USettingsWidget::QuitGame);
+
+    DayCheckbox->OnCheckStateChanged.AddUniqueDynamic(this, &USettingsWidget::DayCheckBoxPressed);
+    NightCheckbox->OnCheckStateChanged.AddUniqueDynamic(this, &USettingsWidget::NightCheckBoxPressed);
+    DefaultVisionCheckbox->OnCheckStateChanged.AddUniqueDynamic(this, &USettingsWidget::DefaultVisionCheckBoxPressed);
+    NightVisionCheckbox->OnCheckStateChanged.AddUniqueDynamic(this, &USettingsWidget::NightVisionCheckBoxPressed);
+    TacticalVisionCheckbox->OnCheckStateChanged.AddUniqueDynamic(this, &USettingsWidget::TacticalVisionCheckBoxPressed);
 }
 
 void USettingsWidget::ResetBindings()
@@ -56,6 +62,33 @@ void USettingsWidget::ResetBindings()
 
 void USettingsWidget::PopulateUI()
 {
+    switch (GameState->HourOfDay)
+    {
+    case EHourOfDay::DAY:
+        DayCheckBoxPressed(true);
+        break;
+    case EHourOfDay::NIGHT:
+        NightCheckBoxPressed(true);
+        break;
+    default:
+        break;
+    }
+
+    switch (GameState->VisionMode)
+    {
+    case EVisionMode::DEFAULT:
+        DefaultVisionCheckBoxPressed(true);
+        break;
+    case EVisionMode::NIGHT:
+        NightVisionCheckBoxPressed(true);
+        break;
+    case EVisionMode::TACTICAL:
+        TacticalVisionCheckBoxPressed(true);
+        break;
+    default:
+        break;
+    }
+
     ShowImpactPointCheckbox->SetCheckedState(GameState->bDrawHitPointEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
     ShowTrajectoryCheckbox->SetCheckedState(GameState->bDrawTrajectoryEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
     UseSilencerCheckbox->SetCheckedState(GameState->bShootSilenced ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
@@ -82,6 +115,8 @@ void USettingsWidget::RandomizeWind()
 
 void USettingsWidget::SaveAndClose()
 {
+    GameState->HourOfDay = DayCheckbox->GetCheckedState() == ECheckBoxState::Checked ? EHourOfDay::DAY : EHourOfDay::NIGHT;
+    GameState->VisionMode = DefaultVisionCheckbox->GetCheckedState() == ECheckBoxState::Checked ? EVisionMode::DEFAULT : NightVisionCheckbox->GetCheckedState() == ECheckBoxState::Checked ? EVisionMode::NIGHT : EVisionMode::TACTICAL;
     GameState->bDrawHitPointEnabled = ShowImpactPointCheckbox->GetCheckedState() == ECheckBoxState::Checked;
     GameState->bDrawTrajectoryEnabled = ShowTrajectoryCheckbox->GetCheckedState() == ECheckBoxState::Checked;
     GameState->bShootSilenced = UseSilencerCheckbox->GetCheckedState() == ECheckBoxState::Checked;
@@ -96,11 +131,17 @@ void USettingsWidget::SaveAndClose()
     FDefaultValueHelper::ParseFloat(WindAngleTextBox->GetText().ToString(), GameState->WindAngleDegrees);
     GameState->ComputeTrajectoryParameters();
     GameState->ComputeShootingTable();
+    GameState->UpdateHourOfDay();
+    GameState->UpdateVisionMode();
+
     CloseSettings();
 }
 
 void USettingsWidget::ResetSettings()
 {
+    GameState->HourOfDay = EHourOfDay::DAY;
+    GameState->VisionMode = EVisionMode::DEFAULT;
+
     GameState->bDrawHitPointEnabled = true;
     GameState->bDrawTrajectoryEnabled = true;
     GameState->bShootSilenced = true;
@@ -113,6 +154,7 @@ void USettingsWidget::ResetSettings()
     GameState->TemperatureCelsius = 15.f;
     GameState->WindSpeedMetersPerSecond = 5.f;
     GameState->WindAngleDegrees = 0.f;
+
     GameState->ComputeTrajectoryParameters();
     GameState->ComputeShootingTable();
     PopulateUI();
@@ -126,4 +168,37 @@ void USettingsWidget::CloseSettings()
 void USettingsWidget::QuitGame()
 {
     UKismetSystemLibrary::QuitGame(this, PlayerController, EQuitPreference::Quit, true);
+}
+
+void USettingsWidget::DayCheckBoxPressed(bool bInIsChecked)
+{
+    DayCheckbox->SetCheckedState(ECheckBoxState::Checked);
+    NightCheckbox->SetCheckedState(ECheckBoxState::Unchecked);
+}
+
+void USettingsWidget::NightCheckBoxPressed(bool bInIsChecked)
+{
+    NightCheckbox->SetCheckedState(ECheckBoxState::Checked);
+    DayCheckbox->SetCheckedState(ECheckBoxState::Unchecked);
+}
+
+void USettingsWidget::DefaultVisionCheckBoxPressed(bool bInIsChecked)
+{
+    DefaultVisionCheckbox->SetCheckedState(ECheckBoxState::Checked);
+    NightVisionCheckbox->SetCheckedState(ECheckBoxState::Unchecked);
+    TacticalVisionCheckbox->SetCheckedState(ECheckBoxState::Unchecked);
+}
+
+void USettingsWidget::NightVisionCheckBoxPressed(bool bInIsChecked)
+{
+    DefaultVisionCheckbox->SetCheckedState(ECheckBoxState::Unchecked);
+    NightVisionCheckbox->SetCheckedState(ECheckBoxState::Checked);
+    TacticalVisionCheckbox->SetCheckedState(ECheckBoxState::Unchecked);
+}
+
+void USettingsWidget::TacticalVisionCheckBoxPressed(bool bInIsChecked)
+{
+    DefaultVisionCheckbox->SetCheckedState(ECheckBoxState::Unchecked);
+    NightVisionCheckbox->SetCheckedState(ECheckBoxState::Unchecked);
+    TacticalVisionCheckbox->SetCheckedState(ECheckBoxState::Checked);
 }

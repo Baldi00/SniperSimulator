@@ -84,4 +84,15 @@ protected:
 	void CloseSettings();
 	UFUNCTION()
 	void QuitGame();
+
+	UFUNCTION()
+	void DayCheckBoxPressed(bool bInIsChecked);
+	UFUNCTION()
+	void NightCheckBoxPressed(bool bInIsChecked);
+	UFUNCTION()
+	void DefaultVisionCheckBoxPressed(bool bInIsChecked);
+	UFUNCTION()
+	void NightVisionCheckBoxPressed(bool bInIsChecked);
+	UFUNCTION()
+	void TacticalVisionCheckBoxPressed(bool bInIsChecked);
 };
