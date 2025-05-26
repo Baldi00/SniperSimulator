@@ -154,6 +154,7 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
         EnhancedInputComponent->BindAction(StabilizeAimingAction, ETriggerEvent::Completed, this, &ASniperPlayer::StabilizeAiming);
         EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &ASniperPlayer::TeleportLogic);
         EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ASniperPlayer::PauseGame);
+        EnhancedInputComponent->BindAction(ToggleVisionModeAction, ETriggerEvent::Triggered, this, &ASniperPlayer::ToggleVisionMode);
     }
 }
 
@@ -394,6 +395,11 @@ void ASniperPlayer::PauseGame(const FInputActionValue& Value)
 {
     UUserWidget* SettingsPauseWidget = CreateWidget<UUserWidget>(GetWorld(), SettingsPauseWidgetClass);
     SettingsPauseWidget->AddToViewport(500);
+}
+
+void ASniperPlayer::ToggleVisionMode(const FInputActionValue& Value)
+{
+    GameState->NextVisionMode();
 }
 
 void ASniperPlayer::SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState)

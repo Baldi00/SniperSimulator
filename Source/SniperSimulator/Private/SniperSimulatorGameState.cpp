@@ -12,7 +12,7 @@ void ASniperSimulatorGameState::BeginPlay()
     Super::BeginPlay();
     ComputeTrajectoryParameters();
     ComputeShootingTable();
-    
+
     SettingsManager = Cast<ASettingsManager>(UGameplayStatics::GetActorOfClass(this, ASettingsManager::StaticClass()));
     RandomizeWind();
     UpdateHourOfDay();
@@ -142,4 +142,10 @@ void ASniperSimulatorGameState::UpdateHourOfDay()
 void ASniperSimulatorGameState::UpdateVisionMode()
 {
     SettingsManager->SetVisionMode(VisionMode);
+}
+
+void ASniperSimulatorGameState::NextVisionMode()
+{
+    VisionMode = (EVisionMode)((((uint8)VisionMode) + 1) % (int8)EVisionMode::MAX);
+    UpdateVisionMode();
 }

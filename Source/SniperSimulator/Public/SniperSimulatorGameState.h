@@ -38,7 +38,8 @@ enum class EVisionMode : uint8
 {
     DEFAULT,
     NIGHT,
-    TACTICAL
+    TACTICAL,
+    MAX
 };
 
 class ASettingsManager;
@@ -164,6 +165,7 @@ public:
     void ComputeShootingTable();
     void UpdateHourOfDay();
     void UpdateVisionMode();
+    void NextVisionMode();
 
 private:
     void ComputeBulletParameters();

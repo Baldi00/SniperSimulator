@@ -22,12 +22,6 @@ protected:
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCheckBox> NightCheckbox = nullptr;
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCheckBox> DefaultVisionCheckbox = nullptr;
-	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCheckBox> NightVisionCheckbox = nullptr;
-	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCheckBox> TacticalVisionCheckbox = nullptr;
-	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCheckBox> ShowImpactPointCheckbox = nullptr;
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCheckBox> ShowTrajectoryCheckbox = nullptr;
@@ -89,10 +83,4 @@ protected:
 	void DayCheckBoxPressed(bool bInIsChecked);
 	UFUNCTION()
 	void NightCheckBoxPressed(bool bInIsChecked);
-	UFUNCTION()
-	void DefaultVisionCheckBoxPressed(bool bInIsChecked);
-	UFUNCTION()
-	void NightVisionCheckBoxPressed(bool bInIsChecked);
-	UFUNCTION()
-	void TacticalVisionCheckBoxPressed(bool bInIsChecked);
 };
