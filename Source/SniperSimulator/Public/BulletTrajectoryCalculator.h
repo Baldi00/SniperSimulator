@@ -68,5 +68,7 @@ public:
     static FTrajectoryPointData GetTrajectoryPointDataAtDistance(const TArray<FVector>& Positions, const FVector& InitialPosition, const FRotator& RifleRotation, const float SimulationTimeInterval, const float Distance);
 
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
-    static bool GetImpactPoint(const UObject* WorldContextObject, const TArray<FVector>& Positions, FVector& ImpactPoint);
+    static bool GetImpactPoint(const UObject* WorldContextObject, const TArray<FVector>& Positions, FVector& ImpactPoint, AActor*& ImpactActor);
+
+    static FHitResult SphereTraceAlongTrajectory(const UObject* WorldContextObject, const TArray<FVector>& Positions, float MaxTargetSpeed, float SimulationIntervalTime, const TArray<FString>& Tags, FVector& TrajectoryImpactLocation);
 };

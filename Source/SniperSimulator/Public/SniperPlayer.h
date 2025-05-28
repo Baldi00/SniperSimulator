@@ -82,12 +82,17 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UInputAction> ToggleVisionModeAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UInputAction> RunAction;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float StandingWalkSpeed = 180.f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float CrouchedWalkSpeed = 120.f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float ProneWalkSpeed = 50.f;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    float RunningSpeed = 400.f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
     TSubclassOf<USniperAimingWidget> AimingWidgetClass;
@@ -110,8 +115,10 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     bool bIsAiming = false;
     bool bIsShooting = false;
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     bool bIsInKillcam = false;
     bool bIsStabilizedAiming = false;
+    bool bIsRunning = false;
     EPlayerPoseState PlayerState = EPlayerPoseState::STANDING;
     FTimerHandle DefaultToAimingTimerHandler;
     TObjectPtr<ASniperSimulatorGameState> GameState;
@@ -167,6 +174,7 @@ protected:
     void TeleportLogic(const FInputActionValue& Value);
     void PauseGame(const FInputActionValue& Value);
     void ToggleVisionMode(const FInputActionValue& Value);
+    void ToggleRunning(const FInputActionValue& Value);
 
     void SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState);
     void SwitchToDefaultView();
@@ -209,4 +217,5 @@ public:
 
     FORCEINLINE void SetIsShooting(bool bInIsShooting) { bIsShooting = bInIsShooting; }
     FORCEINLINE AActor* GetSpawnedBulletActor() { return SpawnedBulletActor; }
+    FORCEINLINE bool IsStabilizedAiming() const { return bIsStabilizedAiming; }
 };

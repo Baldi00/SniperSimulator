@@ -10,6 +10,7 @@
 #include "SniperSimulatorGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include <ABDebug.h>
+#include "ABMath.h"
 #include "BulletHittableItem.h"
 
 ASniperPlayer::ASniperPlayer()
@@ -119,6 +120,8 @@ void ASniperPlayer::Tick(float DeltaTime)
             OscillationStrength *= FMath::Lerp(1.f, 10.f, (float)CurrentZoomIndex / ZoomLevels.Num());
             AimingCameraActor->SetRelativeLocation(FVector(0, FMath::PerlinNoise1D(UGameplayStatics::GetRealTimeSeconds(this) + 17) * OscillationStrength, FMath::PerlinNoise1D(UGameplayStatics::GetRealTimeSeconds(this) + 24) * OscillationStrength));
         }
+        else
+            AimingCameraActor->SetRelativeLocation(FVector::ZeroVector);
     }
 
     if (bIsShooting)
@@ -155,6 +158,7 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
         EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &ASniperPlayer::TeleportLogic);
         EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ASniperPlayer::PauseGame);
         EnhancedInputComponent->BindAction(ToggleVisionModeAction, ETriggerEvent::Triggered, this, &ASniperPlayer::ToggleVisionMode);
+        EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &ASniperPlayer::ToggleRunning);
     }
 }
 
@@ -183,6 +187,8 @@ void ASniperPlayer::Move(const FInputActionValue& Value)
 void ASniperPlayer::StopMoving(const FInputActionValue& Value)
 {
     Animator->bIsWalking = false;
+    if (bIsRunning)
+        SetPlayerPoseState(EPlayerPoseState::STANDING);
 }
 
 void ASniperPlayer::Look(const FInputActionValue& Value)
@@ -248,6 +254,9 @@ void ASniperPlayer::StartAiming(const FInputActionValue& Value)
     if (bIsAiming)
         return;
 
+    if (bIsRunning)
+        SetPlayerPoseState(EPlayerPoseState::STANDING);
+
     bIsAiming = true;
     Animator->bIsAiming = bIsAiming;
 
@@ -267,6 +276,7 @@ void ASniperPlayer::StopAiming(const FInputActionValue& Value)
 
     GetWorldTimerManager().ClearTimer(DefaultToAimingTimerHandler);
     bIsAiming = false;
+    bIsStabilizedAiming = false;
     Animator->bIsAiming = bIsAiming;
 
     if (bIsInKillcam)
@@ -344,8 +354,8 @@ void ASniperPlayer::Shoot(const FInputActionValue& Value)
 
     GameState->SaveShootData();
 
-    BP_PlayShootSound();
     SpawnAndStartMovingBullet();
+    BP_PlayShootSound();
 }
 
 void ASniperPlayer::ShowShootingTable(const FInputActionValue& Value)
@@ -402,9 +412,28 @@ void ASniperPlayer::ToggleVisionMode(const FInputActionValue& Value)
     GameState->NextVisionMode();
 }
 
+void ASniperPlayer::ToggleRunning(const FInputActionValue& Value)
+{
+    if (bIsAiming || bIsInKillcam)
+        return;
+
+    if (!bIsRunning && GetCharacterMovement()->Velocity.SquaredLength() < 100)
+        return;
+
+    if (!bIsRunning)
+        SetPlayerPoseState(EPlayerPoseState::STANDING);
+
+    bIsRunning = !bIsRunning;
+    Animator->bIsRunning = bIsRunning;
+
+    GetCharacterMovement()->MaxWalkSpeed = bIsRunning ? RunningSpeed : StandingWalkSpeed;
+}
+
 void ASniperPlayer::SetPlayerPoseState(EPlayerPoseState NewPlayerPoseState)
 {
     PlayerState = NewPlayerPoseState;
+    bIsRunning = false;
+    Animator->bIsRunning = false;
 
     switch (PlayerState)
     {
@@ -472,10 +501,8 @@ void ASniperPlayer::ShootingEnded()
 {
     if (bIsInKillcam)
     {
-        if (bIsStabilizedAiming)
-            UGameplayStatics::SetGlobalTimeDilation(this, 0.8f);
-        else
-            UGameplayStatics::SetGlobalTimeDilation(this, 1);
+        UGameplayStatics::SetGlobalTimeDilation(this, 1);
+        SetIsShooting(false);
         SpawnedBulletActor->BP_HideMeshAndStopCamera();
         FTimerHandle Unused;
         GetWorldTimerManager().SetTimer(Unused, this, &ASniperPlayer::ShootingEndedKillcam, 2);
@@ -504,15 +531,17 @@ void ASniperPlayer::ShootingEndedKillcam()
         UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(this);
     }
     ShootingEnded();
+    GameState->ResetVisionModePostKillcam();
 }
 
 void ASniperPlayer::StartKillcam()
 {
     bIsInKillcam = true;
-    UGameplayStatics::SetGlobalTimeDilation(this, 0.25f);
+    UGameplayStatics::SetGlobalTimeDilation(this, UABMath::Remap(10000, 250000, 0.1f, 1, FVector::Dist(GameState->GetShootedImpactPoint(), GetActorLocation())));
     HideShootingTable(FInputActionValue());
     SwitchToDefaultView();
     UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(SpawnedBulletActor);
+    GameState->StartKillcamVisionMode();
 }
 
 void ASniperPlayer::SpawnAndStartMovingBullet()
@@ -522,7 +551,35 @@ void ASniperPlayer::SpawnAndStartMovingBullet()
     BulletShootingTimer = 0;
     BulletShootingDuration = GameState->GetShotSimulationTimeSeconds();
 
+    if (GameState->IsShootedImpactPointValid() && GameState->GetUseKillcam())
+    {
+        // Search for robot hit
+        FVector TrajectoryImpactPoint;
+        FHitResult HitResult = UBulletTrajectoryCalculator::SphereTraceAlongTrajectory(this, GameState->GetShootedTrajectory(), 180, GameState->GetShotSimulationTimeIntervalSeconds(), FJsonSerializableArray({ "Robot" }), TrajectoryImpactPoint);
+        if (HitResult.GetActor() != nullptr)
+        {
+            ACharacter* Robot = Cast<ACharacter>(HitResult.GetActor());
+            FTrajectoryPointData TrajectoryPointData = UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(GameState->GetShootedTrajectory(), AimingCameraComponent->GetComponentLocation(), GetControlRotation(), GameState->GetShotSimulationTimeIntervalSeconds(), FVector::Dist(AimingCameraComponent->GetComponentLocation(), TrajectoryImpactPoint) + 300);
+            if (Robot->GetCharacterMovement()->Velocity.SquaredLength() < 10 && GameState->GetShootedImpactActor()->ActorHasTag("Robot") ||
+                FVector::DotProduct(Robot->GetCharacterMovement()->Velocity.GetSafeNormal(), (TrajectoryPointData.Point - Robot->GetActorLocation()).GetSafeNormal()) > 0 && FVector::DotProduct(Robot->GetCharacterMovement()->Velocity.GetSafeNormal(), (TrajectoryImpactPoint - Robot->GetActorLocation()).GetSafeNormal()) < 0 ||
+                FVector::DotProduct(Robot->GetCharacterMovement()->Velocity.GetSafeNormal(), (TrajectoryPointData.Point - Robot->GetActorLocation()).GetSafeNormal()) < 0 && FVector::DotProduct(Robot->GetCharacterMovement()->Velocity.GetSafeNormal(), (TrajectoryImpactPoint - Robot->GetActorLocation()).GetSafeNormal()) > 0)
+            {
+                Robot->GetCharacterMovement()->MaxWalkSpeed = 0;
+                GameState->SetLinearShootedTrajectory(AimingCameraComponent->GetComponentLocation(), Robot->GetActorLocation() + FVector::UpVector * FMath::RandRange(0.f, 60.f), TrajectoryPointData.TimeOfFlight);
+                StartKillcam();
+                SetIsShooting(true);
+                return;
+            }
+        }
+
+        // Search for pumpkin hit
+        if (GameState->GetShootedImpactActor() != nullptr && GameState->GetShootedImpactActor()->ActorHasTag("Pumpkin"))
+        {
+            StartKillcam();
+            SetIsShooting(true);
+            return;
+        }
+    }
+
     SetIsShooting(true);
-    if (GameState->GetUseKillcam())
-        StartKillcam();
 }

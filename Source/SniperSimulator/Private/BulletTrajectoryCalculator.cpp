@@ -95,7 +95,7 @@ FTrajectoryPointData UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistan
     return FTrajectoryPointData();
 }
 
-bool UBulletTrajectoryCalculator::GetImpactPoint(const UObject* WorldContextObject, const TArray<FVector>& Positions, FVector& ImpactPoint)
+bool UBulletTrajectoryCalculator::GetImpactPoint(const UObject* WorldContextObject, const TArray<FVector>& Positions, FVector& ImpactPoint, AActor*& ImpactActor)
 {
     TArray<AActor*> Ignored;
     FHitResult HitResult;
@@ -104,8 +104,35 @@ bool UBulletTrajectoryCalculator::GetImpactPoint(const UObject* WorldContextObje
         if (UKismetSystemLibrary::LineTraceSingle(WorldContextObject, Positions[i - 1], Positions[i], ETraceTypeQuery::TraceTypeQuery1, false, Ignored, EDrawDebugTrace::None, HitResult, true))
         {
             ImpactPoint = HitResult.ImpactPoint;
+            ImpactActor = HitResult.GetActor();
             return true;
         }
     }
     return false;
+}
+
+FHitResult UBulletTrajectoryCalculator::SphereTraceAlongTrajectory(const UObject* WorldContextObject, const TArray<FVector>& Positions, float MaxTargetSeed, float SimulationIntervalTime, const TArray<FString>& Tags, FVector& TrajectoryImpactLocation)
+{
+    TArray<FHitResult> HitResults;
+    for (int i = 1; i < Positions.Num(); i++)
+    {
+        float SphereRadius = (i - 1) * SimulationIntervalTime * MaxTargetSeed;
+        if (UKismetSystemLibrary::SphereTraceMulti(WorldContextObject, Positions[i - 1], Positions[i], SphereRadius, ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResults, true))
+            if (Tags.Num() > 0)
+            {
+                for (FHitResult& HitResult : HitResults)
+                    for (const FString& Tag : Tags)
+                        if (HitResult.GetActor()->ActorHasTag(FName(*Tag)))
+                        {
+                            TrajectoryImpactLocation = FMath::Lerp(Positions[i - 1], Positions[i], HitResult.Distance / FVector::Dist(Positions[i - 1], Positions[i]));
+                            return HitResult;
+                        }
+            }
+            else
+            {
+                TrajectoryImpactLocation = FMath::Lerp(Positions[i - 1], Positions[i], HitResults[0].Distance / FVector::Dist(Positions[i - 1], Positions[i]));
+                return HitResults[0];
+            }
+    }
+    return FHitResult();
 }

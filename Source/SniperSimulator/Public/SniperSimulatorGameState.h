@@ -66,7 +66,9 @@ class SNIPERSIMULATOR_API ASniperSimulatorGameState : public AGameStateBase
     TArray<FVector> CurrentTrajectory;
     TArray<FVector> ShootedTrajectory;
     FVector ImpactPoint;
+    AActor* CurrentImpactActor;
     FVector ShootedImpactPoint;
+    AActor* ShootedImpactActor;
     bool bIsImpactPointValid = false;
     bool bIsShootedImpactPointValid = false;
 
@@ -74,6 +76,8 @@ class SNIPERSIMULATOR_API ASniperSimulatorGameState : public AGameStateBase
     float WindAngleNoise = 0;
 
     TObjectPtr<ASettingsManager> SettingsManager;
+    
+    EVisionMode PreviousVisionMode;
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bullet, meta = (AllowPrivateAccess = "true"))
@@ -146,6 +150,8 @@ public:
     FORCEINLINE FVector& GetShootedImpactPoint() { return ShootedImpactPoint; }
     UFUNCTION(BlueprintCallable)
     FORCEINLINE bool IsShootedImpactPointValid() const { return bIsShootedImpactPointValid; }
+    UFUNCTION(BlueprintCallable)
+    FORCEINLINE AActor* GetShootedImpactActor() const { return ShootedImpactActor; }
 
     void SaveShootData();
 
@@ -166,6 +172,10 @@ public:
     void UpdateHourOfDay();
     void UpdateVisionMode();
     void NextVisionMode();
+
+    void SetLinearShootedTrajectory(FVector Start, FVector End, float TimeToImpact);
+    void StartKillcamVisionMode();
+    void ResetVisionModePostKillcam();
 
 private:
     void ComputeBulletParameters();

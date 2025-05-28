@@ -56,13 +56,13 @@ void ASniperSimulatorGameState::ComputeTrajectory(const FVector& InitialPosition
 
 void ASniperSimulatorGameState::ComputeImpactPoint()
 {
-    bIsImpactPointValid = UBulletTrajectoryCalculator::GetImpactPoint(this, CurrentTrajectory, ImpactPoint);
+    bIsImpactPointValid = UBulletTrajectoryCalculator::GetImpactPoint(this, CurrentTrajectory, ImpactPoint, CurrentImpactActor);
 }
 
 void ASniperSimulatorGameState::SaveShootData()
 {
     ShootedTrajectory = CurrentTrajectory;
-    bIsShootedImpactPointValid = UBulletTrajectoryCalculator::GetImpactPoint(this, ShootedTrajectory, ShootedImpactPoint);
+    bIsShootedImpactPointValid = UBulletTrajectoryCalculator::GetImpactPoint(this, ShootedTrajectory, ShootedImpactPoint, ShootedImpactActor);
 }
 
 void ASniperSimulatorGameState::ComputeTrajectoryParameters()
@@ -147,5 +147,28 @@ void ASniperSimulatorGameState::UpdateVisionMode()
 void ASniperSimulatorGameState::NextVisionMode()
 {
     VisionMode = (EVisionMode)((((uint8)VisionMode) + 1) % (int8)EVisionMode::MAX);
+    UpdateVisionMode();
+}
+
+void ASniperSimulatorGameState::SetLinearShootedTrajectory(FVector Start, FVector End, float TimeToImpact)
+{
+    float CurrentSimulationTime = 0;
+    for (int i = 0; i < ShootedTrajectory.Num(); i++)
+    {
+        ShootedTrajectory[i] = FMath::Lerp(Start, End, CurrentSimulationTime / TimeToImpact);
+        CurrentSimulationTime += ShotSimulationTimeIntervalSeconds;
+    }
+}
+
+void ASniperSimulatorGameState::StartKillcamVisionMode()
+{
+    PreviousVisionMode = VisionMode;
+    VisionMode = EVisionMode::DEFAULT;
+    UpdateVisionMode();
+}
+
+void ASniperSimulatorGameState::ResetVisionModePostKillcam()
+{
+    VisionMode = PreviousVisionMode;
     UpdateVisionMode();
 }

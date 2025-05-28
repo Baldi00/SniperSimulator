@@ -16,5 +16,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsWalking;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsRunning;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EPlayerPoseState PlayerPoseState;
 };

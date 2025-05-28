@@ -30,7 +30,7 @@ void USniperAimingWidget::NativeDestruct()
 void USniperAimingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
-    if (GameState == nullptr || PlayerController == nullptr || !GameState->IsImpactPointValid() || !GameState->IsDrawHitPointEnabled())
+    if (GameState == nullptr || PlayerController == nullptr || !GameState->IsImpactPointValid() || !GameState->IsDrawHitPointEnabled() || !SniperPlayer->IsStabilizedAiming())
     {
         ImpactPointImage->SetVisibility(ESlateVisibility::Hidden);
         return;
