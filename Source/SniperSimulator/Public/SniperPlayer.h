@@ -146,6 +146,11 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     float BulletShootingTimer = 0;
     float BulletShootingDuration = 0;
 
+    int32 ConsecutiveElevationClickCount = 0;
+    float LastElevationClickTime = 0;
+    int32 ConsecutiveWindageClickCount = 0;
+    float LastWindageClickTime = 0;
+
 public:
     ASniperPlayer();
 

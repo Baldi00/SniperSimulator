@@ -317,14 +317,31 @@ void ASniperPlayer::RegolateElevation(const FInputActionValue& Value)
 
     const float Input = Value.Get<float>();
 
-    if (Input > 0)
-        CurrentElevationLevel--;
-    else if (Input < 0)
-        CurrentElevationLevel++;
+    if (UGameplayStatics::GetTimeSeconds(this) - LastElevationClickTime < 0.2f)
+        ConsecutiveElevationClickCount++;
+    else
+        ConsecutiveElevationClickCount = 0;
+
+    if (ConsecutiveElevationClickCount > 9)
+    {
+        if (Input > 0)
+            CurrentElevationLevel -= 10;
+        else if (Input < 0)
+            CurrentElevationLevel += 10;
+    }
+    else
+    {
+        if (Input > 0)
+            CurrentElevationLevel--;
+        else if (Input < 0)
+            CurrentElevationLevel++;
+    }
 
     AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle, CurrentWindageLevel * ClickAngle, 0));
     BP_PlayClickSound();
     OnElevationRegulationUpdated.Broadcast(CurrentElevationLevel);
+
+    LastElevationClickTime = UGameplayStatics::GetTimeSeconds(this);
 }
 
 void ASniperPlayer::RegolateWindage(const FInputActionValue& Value)
@@ -334,14 +351,31 @@ void ASniperPlayer::RegolateWindage(const FInputActionValue& Value)
 
     const float Input = Value.Get<float>();
 
-    if (Input > 0)
-        CurrentWindageLevel--;
-    else if (Input < 0)
-        CurrentWindageLevel++;
+    if (UGameplayStatics::GetTimeSeconds(this) - LastWindageClickTime < 0.2f)
+        ConsecutiveWindageClickCount++;
+    else
+        ConsecutiveWindageClickCount = 0;
+
+    if (ConsecutiveWindageClickCount > 9)
+    {
+        if (Input > 0)
+            CurrentWindageLevel -= 10;
+        else if (Input < 0)
+            CurrentWindageLevel += 10;
+    }
+    else
+    {
+        if (Input > 0)
+            CurrentWindageLevel--;
+        else if (Input < 0)
+            CurrentWindageLevel++;
+    }
 
     AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle, CurrentWindageLevel * ClickAngle, 0));
     BP_PlayClickSound();
     OnWindageRegulationUpdated.Broadcast(CurrentWindageLevel);
+
+    LastWindageClickTime = UGameplayStatics::GetTimeSeconds(this);
 }
 
 void ASniperPlayer::Shoot(const FInputActionValue& Value)
