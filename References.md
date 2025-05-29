@@ -27,3 +27,5 @@
 [12,7 × 99 mm NATO / .50 BMG (Wikipedia)](https://it.wikipedia.org/wiki/12,7_%C3%97_99_mm_NATO)
 
 [.50 BMG (Barret Firearms)](https://barrett.net/products/accessories/ammunition/50bmg/)
+
+[Ballistic Solver](https://github.com/b96young/ballisticsolver)
