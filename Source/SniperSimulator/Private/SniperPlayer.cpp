@@ -164,7 +164,7 @@ void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void ASniperPlayer::Move(const FInputActionValue& Value)
 {
-    if (bIsInKillcam)
+    if (bIsInKillcam || bIsAiming)
         return;
 
     const FVector2D MovementVector = Value.Get<FVector2D>();
@@ -186,6 +186,9 @@ void ASniperPlayer::Move(const FInputActionValue& Value)
 
 void ASniperPlayer::StopMoving(const FInputActionValue& Value)
 {
+    if (bIsInKillcam || bIsAiming)
+        return;
+
     Animator->bIsWalking = false;
     if (bIsRunning)
         SetPlayerPoseState(EPlayerPoseState::STANDING);
@@ -254,6 +257,7 @@ void ASniperPlayer::StartAiming(const FInputActionValue& Value)
     if (bIsAiming)
         return;
 
+    Animator->bIsWalking = false;
     if (bIsRunning)
         SetPlayerPoseState(EPlayerPoseState::STANDING);
 

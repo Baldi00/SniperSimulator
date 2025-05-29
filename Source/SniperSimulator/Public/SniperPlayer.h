@@ -205,6 +205,9 @@ protected:
 
     void SpawnAndStartMovingBullet();
 
+    UFUNCTION(BlueprintCallable)
+    FORCEINLINE UCameraComponent* GetAimingCameraComponent() const { return AimingCameraComponent; }
+
 public:
     UPROPERTY(BlueprintAssignable)
     FOnZoomLevelUpdated OnZoomLevelUpdated;
