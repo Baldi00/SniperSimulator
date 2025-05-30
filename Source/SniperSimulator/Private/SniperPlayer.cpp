@@ -134,6 +134,10 @@ void ASniperPlayer::Tick(float DeltaTime)
             BulletShootingTimer += DeltaTime;
         }
     }
+
+    AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle + ShootAnimationVerticalAngle, CurrentWindageLevel * ClickAngle, 0));
+    if (AimingWidget != nullptr)
+        AimingWidget->BP_Shoot(ShootAnimationVerticalAngle);
 }
 
 void ASniperPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -393,7 +397,7 @@ void ASniperPlayer::Shoot(const FInputActionValue& Value)
     GameState->SaveShootData();
 
     SpawnAndStartMovingBullet();
-    BP_PlayShootSound();
+    BP_Shoot();
 }
 
 void ASniperPlayer::ShowShootingTable(const FInputActionValue& Value)

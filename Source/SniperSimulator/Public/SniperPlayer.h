@@ -195,7 +195,7 @@ protected:
     void StartKillcam();
 
     UFUNCTION(BlueprintImplementableEvent)
-    void BP_PlayShootSound();
+    void BP_Shoot();
     UFUNCTION(BlueprintImplementableEvent)
     void BP_PlayFarHitSound();
     UFUNCTION(BlueprintImplementableEvent)
@@ -217,6 +217,9 @@ public:
     FOnElevationRegulationUpdated OnElevationRegulationUpdated;
     UPROPERTY(BlueprintAssignable)
     FOnWindageRegulationUpdated OnWindageRegulationUpdated;
+
+    UPROPERTY(BlueprintReadWrite)
+    float ShootAnimationVerticalAngle = 0;
 
     FORCEINLINE int32 GetCurrentZoomLevel() { return ZoomLevels[CurrentZoomIndex]; }
     FORCEINLINE float GetCurrentTargetDistance() { return CurrentTargetDistance; }

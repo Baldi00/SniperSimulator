@@ -56,4 +56,8 @@ private:
 	void UpdateElevation(int32 NewElevation);
 	UFUNCTION()
 	void UpdateWindCorrection(int32 NewWindCorrection);
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void BP_Shoot(float InShootAnimationVerticalAngle);
 };
