@@ -135,7 +135,7 @@ void ASniperPlayer::Tick(float DeltaTime)
         }
     }
 
-    AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle + ShootAnimationVerticalAngle, CurrentWindageLevel * ClickAngle, 0));
+    AimingCameraComponent->SetRelativeRotation(FRotator(CurrentElevationLevel * ClickAngle + ShootAnimationVerticalAngle, CurrentWindageLevel * ClickAngle + ShootAnimationVerticalAngle * 0.5f, ShootAnimationVerticalAngle * 2));
     if (AimingWidget != nullptr)
         AimingWidget->BP_Shoot(ShootAnimationVerticalAngle);
 }
