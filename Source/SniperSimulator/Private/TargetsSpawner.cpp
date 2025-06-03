@@ -27,19 +27,4 @@ void ATargetsSpawner::BeginPlay()
                 SpawnedPumpkin->SetFolderPath("Pumpkins");
         }
     }
-
-    // Robots
-    int32 RobotsCount = FMath::RandRange(MinRobots, MaxRobots);
-    for (int i = 0; i < RobotsCount; i++)
-    {
-        FVector Position = FVector(FMath::RandRange(MinRobotPosition.X, MaxRobotPosition.X), FMath::RandRange(MinRobotPosition.Y, MaxRobotPosition.Y), MaxRobotPosition.Z);
-        FHitResult HitResult;
-        UKismetSystemLibrary::LineTraceSingle(this, Position, Position - FVector::UpVector * (MaxRobotPosition.Z - MinRobotPosition.Z), ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResult, true);
-        if (HitResult.bBlockingHit)
-        {
-            AActor* SpawnedRobot = GetWorld()->SpawnActor<AActor>(RobotActorClass, HitResult.ImpactPoint, FRotator::ZeroRotator, SpawnParameters);
-            if (SpawnedRobot)
-                SpawnedRobot->SetFolderPath("Robots");
-        }
-    }
 }
