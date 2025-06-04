@@ -6,6 +6,7 @@
 
 class ARobot;
 class USniperPlayerAnimInstance;
+class URobotAnimInstance;
 
 USTRUCT()
 struct FRobotData
@@ -13,6 +14,7 @@ struct FRobotData
     GENERATED_BODY()
 
     TObjectPtr<ARobot> SpawnedActor = nullptr;
+    TObjectPtr<URobotAnimInstance> Animator = nullptr;
     TArray<FVector> Path;
     int32 CurrentPathNextPointIndex = 0;
     float IdleTimer = 0;

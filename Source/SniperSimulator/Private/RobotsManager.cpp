@@ -3,8 +3,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
-#include "SniperPlayerAnimInstance.h"
+#include "RobotAnimInstance.h"
 #include "Robot.h"
+#include "Components/SkeletalMeshComponent.h"
 
 ARobotsManager::ARobotsManager()
 {
@@ -31,11 +32,10 @@ void ARobotsManager::BeginPlay()
             if (SpawnedRobot)
             {
                 SpawnedRobot->SetFolderPath("Robots");
-                Robots.Add({ SpawnedRobot });
+                Robots.Add({ SpawnedRobot, Cast<URobotAnimInstance>(SpawnedRobot->GetComponentByClass<USkeletalMeshComponent>()->GetAnimInstance()) });
             }
         }
     }
-
 }
 
 void ARobotsManager::Tick(float DeltaTime)
@@ -76,7 +76,7 @@ void ARobotsManager::Tick(float DeltaTime)
                         Robot.Path = NavPath->PathPoints;
                         Robot.CurrentPathNextPointIndex = 0;
                     }
-                    Robot.SpawnedActor->SetIsWalking(false);
+                    Robot.Animator->bIsWalking = false;
                 }
             }
             else
@@ -88,7 +88,7 @@ void ARobotsManager::Tick(float DeltaTime)
                 ActorRotation.Roll = 0;
                 Robot.SpawnedActor->SetActorRotation(ActorRotation);
                 Robot.SpawnedActor->AddActorWorldOffset(180.f * DeltaTime * Direction);
-                Robot.SpawnedActor->SetIsWalking(true);
+                Robot.Animator->bIsWalking = true;
             }
         }
         else
