@@ -12,6 +12,7 @@
 #include <ABDebug.h>
 #include "ABMath.h"
 #include "BulletHittableItem.h"
+#include "Robot.h"
 
 ASniperPlayer::ASniperPlayer()
 {
@@ -600,14 +601,14 @@ void ASniperPlayer::SpawnAndStartMovingBullet()
         FHitResult HitResult = UBulletTrajectoryCalculator::SphereTraceAlongTrajectory(this, GameState->GetShootedTrajectory(), 180, GameState->GetShotSimulationTimeIntervalSeconds(), FJsonSerializableArray({ "Robot" }), TrajectoryImpactPoint);
         if (HitResult.GetActor() != nullptr)
         {
-            ACharacter* Robot = Cast<ACharacter>(HitResult.GetActor());
+            ARobot* Robot = Cast<ARobot>(HitResult.GetActor());
             FTrajectoryPointData TrajectoryPointData = UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(GameState->GetShootedTrajectory(), AimingCameraComponent->GetComponentLocation(), GetControlRotation(), GameState->GetShotSimulationTimeIntervalSeconds(), FVector::Dist(AimingCameraComponent->GetComponentLocation(), TrajectoryImpactPoint) + 300);
-            if (Robot->GetCharacterMovement()->Velocity.SquaredLength() < 10 && GameState->GetShootedImpactActor()->ActorHasTag("Robot") ||
-                FVector::DotProduct(Robot->GetCharacterMovement()->Velocity.GetSafeNormal(), (TrajectoryPointData.Point - Robot->GetActorLocation()).GetSafeNormal()) > 0 && FVector::DotProduct(Robot->GetCharacterMovement()->Velocity.GetSafeNormal(), (TrajectoryImpactPoint - Robot->GetActorLocation()).GetSafeNormal()) < 0 ||
-                FVector::DotProduct(Robot->GetCharacterMovement()->Velocity.GetSafeNormal(), (TrajectoryPointData.Point - Robot->GetActorLocation()).GetSafeNormal()) < 0 && FVector::DotProduct(Robot->GetCharacterMovement()->Velocity.GetSafeNormal(), (TrajectoryImpactPoint - Robot->GetActorLocation()).GetSafeNormal()) > 0)
+            if (Robot->IsWalking() && GameState->GetShootedImpactActor()->ActorHasTag("Robot") ||
+                FVector::DotProduct(Robot->Direction, (TrajectoryPointData.Point - Robot->GetActorLocation()).GetSafeNormal()) > 0 && FVector::DotProduct(Robot->Direction, (TrajectoryImpactPoint - Robot->GetActorLocation()).GetSafeNormal()) < 0 ||
+                FVector::DotProduct(Robot->Direction, (TrajectoryPointData.Point - Robot->GetActorLocation()).GetSafeNormal()) < 0 && FVector::DotProduct(Robot->Direction, (TrajectoryImpactPoint - Robot->GetActorLocation()).GetSafeNormal()) > 0)
             {
-                Robot->GetCharacterMovement()->MaxWalkSpeed = 0;
-                GameState->SetLinearShootedTrajectory(AimingCameraComponent->GetComponentLocation(), Robot->GetActorLocation() + FVector::UpVector * FMath::RandRange(0.f, 60.f), TrajectoryPointData.TimeOfFlight);
+                Robot->bIsStopped = true;
+                GameState->SetLinearShootedTrajectory(AimingCameraComponent->GetComponentLocation(), Robot->GetActorLocation() + FVector::UpVector * FMath::RandRange(140.f, 240.f), TrajectoryPointData.TimeOfFlight);
                 StartKillcam();
                 SetIsShooting(true);
                 return;

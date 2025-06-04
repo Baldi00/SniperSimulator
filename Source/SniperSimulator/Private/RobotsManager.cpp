@@ -45,6 +45,9 @@ void ARobotsManager::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     for (FRobotData& Robot : Robots)
     {
+        if (Robot.SpawnedActor->bIsStopped)
+            continue;
+
         if (Robot.IdleTimer <= 0)
         {
             if (Robot.Path.Num() == 0)
@@ -90,6 +93,7 @@ void ARobotsManager::Tick(float DeltaTime)
                 ActorRotation.Roll = 0;
                 Robot.SpawnedActor->SetActorRotation(ActorRotation);
                 Robot.SpawnedActor->AddActorWorldOffset(180.f * DeltaTime * Direction);
+                Robot.SpawnedActor->Direction = Direction;
                 Robot.Animator->bIsWalking = true;
             }
         }

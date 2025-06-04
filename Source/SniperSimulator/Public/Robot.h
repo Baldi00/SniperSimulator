@@ -12,8 +12,15 @@ class SNIPERSIMULATOR_API ARobot : public AActor
     UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     bool bIsWalking = false;
 
+
 public:
     ARobot();
 
     FORCEINLINE void SetIsWalking(bool bInIsWalking) { bIsWalking = bInIsWalking; }
+    FORCEINLINE bool IsWalking() { return bIsWalking; }
+
+    FVector Direction = FVector::ZeroVector;
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bIsStopped = false;
 };
