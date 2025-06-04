@@ -23,8 +23,10 @@ void ATargetsSpawner::BeginPlay()
         if (HitResult.bBlockingHit)
         {
             AActor* SpawnedPumpkin = GetWorld()->SpawnActor<AActor>(PumpkinActorClass, HitResult.ImpactPoint, FRotator::ZeroRotator, SpawnParameters);
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
             if (SpawnedPumpkin)
                 SpawnedPumpkin->SetFolderPath("Pumpkins");
+#endif
         }
     }
 }

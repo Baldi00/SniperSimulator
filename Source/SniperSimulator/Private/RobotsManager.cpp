@@ -31,7 +31,9 @@ void ARobotsManager::BeginPlay()
             ARobot* SpawnedRobot = GetWorld()->SpawnActor<ARobot>(RobotActorClass, HitResult.ImpactPoint, FRotator::ZeroRotator, SpawnParameters);
             if (SpawnedRobot)
             {
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
                 SpawnedRobot->SetFolderPath("Robots");
+#endif
                 Robots.Add({ SpawnedRobot, Cast<URobotAnimInstance>(SpawnedRobot->GetComponentByClass<USkeletalMeshComponent>()->GetAnimInstance()) });
             }
         }
