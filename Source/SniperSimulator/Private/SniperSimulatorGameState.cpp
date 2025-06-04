@@ -1,6 +1,7 @@
 #include "SniperSimulatorGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "SettingsManager.h"
+#include "GameFramework/GameUserSettings.h"
 
 ASniperSimulatorGameState::ASniperSimulatorGameState()
 {
@@ -17,6 +18,7 @@ void ASniperSimulatorGameState::BeginPlay()
     RandomizeWind();
     UpdateHourOfDay();
     UpdateVisionMode();
+    SetVsync(true);
 }
 
 void ASniperSimulatorGameState::Tick(float DeltaTime)
@@ -171,4 +173,17 @@ void ASniperSimulatorGameState::ResetVisionModePostKillcam()
 {
     VisionMode = PreviousVisionMode;
     UpdateVisionMode();
+}
+
+void ASniperSimulatorGameState::SetVsync(bool bInVsyncOn)
+{
+    GEngine->GetGameUserSettings()->SetVSyncEnabled(bInVsyncOn);
+    if (!bInVsyncOn)
+        GEngine->GetGameUserSettings()->SetFrameRateLimit(999);
+    GEngine->GetGameUserSettings()->ApplySettings(true);
+}
+
+bool ASniperSimulatorGameState::IsVsyncEnabled()
+{
+    return GEngine->GetGameUserSettings()->IsVSyncEnabled();
 }

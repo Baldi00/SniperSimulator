@@ -177,6 +177,9 @@ public:
     void StartKillcamVisionMode();
     void ResetVisionModePostKillcam();
 
+    void SetVsync(bool bInVsyncOn);
+    bool IsVsyncEnabled();
+
 private:
     void ComputeBulletParameters();
     void ComputeAirDensity();

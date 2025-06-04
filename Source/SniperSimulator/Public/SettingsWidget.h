@@ -29,6 +29,8 @@ protected:
 	TObjectPtr<UCheckBox> UseSilencerCheckbox = nullptr;
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCheckBox> KillcamCheckbox = nullptr;
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UCheckBox> VSyncCheckbox = nullptr;
 
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UEditableTextBox> MassTextBox = nullptr;

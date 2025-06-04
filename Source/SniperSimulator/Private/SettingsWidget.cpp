@@ -49,7 +49,7 @@ void USettingsWidget::ResetBindings()
 {
     NightCheckbox->OnCheckStateChanged.RemoveDynamic(this, &USettingsWidget::NightCheckBoxPressed);
     DayCheckbox->OnCheckStateChanged.RemoveDynamic(this, &USettingsWidget::DayCheckBoxPressed);
-    
+
     QuitGameButton->OnClicked.RemoveDynamic(this, &USettingsWidget::QuitGame);
     ResetButton->OnClicked.RemoveDynamic(this, &USettingsWidget::ResetSettings);
     SaveButton->OnClicked.RemoveDynamic(this, &USettingsWidget::SaveAndClose);
@@ -78,6 +78,7 @@ void USettingsWidget::PopulateUI()
     ShowTrajectoryCheckbox->SetCheckedState(GameState->bDrawTrajectoryEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
     UseSilencerCheckbox->SetCheckedState(GameState->bShootSilenced ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
     KillcamCheckbox->SetCheckedState(GameState->bUseKillcam ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+    VSyncCheckbox->SetCheckedState(GameState->IsVsyncEnabled() ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
 
     MassTextBox->SetText(FText::FromString(FString::Printf(TEXT("%f"), GameState->BulletMassGrams)));
     CaliberTextBox->SetText(FText::FromString(FString::Printf(TEXT("%f"), GameState->BulletCaliberMillimeters)));
@@ -105,6 +106,7 @@ void USettingsWidget::SaveAndClose()
     GameState->bDrawTrajectoryEnabled = ShowTrajectoryCheckbox->GetCheckedState() == ECheckBoxState::Checked;
     GameState->bShootSilenced = UseSilencerCheckbox->GetCheckedState() == ECheckBoxState::Checked;
     GameState->bUseKillcam = KillcamCheckbox->GetCheckedState() == ECheckBoxState::Checked;
+    GameState->SetVsync(VSyncCheckbox->GetCheckedState() == ECheckBoxState::Checked);
     FDefaultValueHelper::ParseFloat(MassTextBox->GetText().ToString(), GameState->BulletMassGrams);
     FDefaultValueHelper::ParseFloat(CaliberTextBox->GetText().ToString(), GameState->BulletCaliberMillimeters);
     FDefaultValueHelper::ParseFloat(DragCoefficientTextBox->GetText().ToString(), GameState->BulletDragCoefficient);
