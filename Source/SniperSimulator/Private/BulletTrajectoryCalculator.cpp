@@ -118,6 +118,7 @@ FHitResult UBulletTrajectoryCalculator::SphereTraceAlongTrajectory(const UObject
     {
         float SphereRadius = (i - 1) * SimulationIntervalTime * MaxTargetSeed;
         if (UKismetSystemLibrary::SphereTraceMulti(WorldContextObject, Positions[i - 1], Positions[i], SphereRadius, ETraceTypeQuery::TraceTypeQuery1, false, TArray<AActor*>(), EDrawDebugTrace::None, HitResults, true))
+        {
             if (Tags.Num() > 0)
             {
                 for (FHitResult& HitResult : HitResults)
@@ -133,6 +134,7 @@ FHitResult UBulletTrajectoryCalculator::SphereTraceAlongTrajectory(const UObject
                 TrajectoryImpactLocation = FMath::Lerp(Positions[i - 1], Positions[i], HitResults[0].Distance / FVector::Dist(Positions[i - 1], Positions[i]));
                 return HitResults[0];
             }
+        }
     }
     return FHitResult();
 }

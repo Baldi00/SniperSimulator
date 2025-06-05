@@ -90,7 +90,7 @@ void USniperAimingWidget::UpdateCurrentWind(float NewWindSpeed, float NewWindAng
         NewWindAngle = (180 - FMath::Abs(NewWindAngle)) * FMath::Sign(NewWindAngle);
         WindFrontBackDirection = 'F';
     }
-    WindSpeed->SetText(FText::FromString(FString::Printf(TEXT("%4.1f m/s | %2.1f° | %c%c"), NewWindSpeed, FMath::Abs(NewWindAngle), NewWindAngle > 0 ? 'L' : 'R', WindFrontBackDirection)));
+    WindSpeed->SetText(FText::FromString(FString::Printf(TEXT("%4.1f m/s | %2.1f\x00B0 | %c%c"), NewWindSpeed, FMath::Abs(NewWindAngle), NewWindAngle > 0 ? 'L' : 'R', WindFrontBackDirection)));
 }
 
 void USniperAimingWidget::UpdateZoomLevel(int32 NewZoomLevel)
