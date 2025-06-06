@@ -2,5 +2,5 @@
 
 ARobot::ARobot()
 {
-	PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = false;
 }

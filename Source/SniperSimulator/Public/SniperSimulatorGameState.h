@@ -167,6 +167,9 @@ public:
     UFUNCTION(BlueprintCallable)
     FORCEINLINE bool IsDrawHitPointEnabled() const { return bDrawHitPointEnabled; }
 
+    UFUNCTION(BlueprintCallable)
+    FORCEINLINE AActor* GetCurrentImpactActor() const { return CurrentImpactActor; }
+
     void ComputeTrajectoryParameters();
     void ComputeShootingTable();
     void UpdateHourOfDay();

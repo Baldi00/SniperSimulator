@@ -205,9 +205,6 @@ protected:
 
     void SpawnAndStartMovingBullet();
 
-    UFUNCTION(BlueprintCallable)
-    FORCEINLINE UCameraComponent* GetAimingCameraComponent() const { return AimingCameraComponent; }
-
 public:
     UPROPERTY(BlueprintAssignable)
     FOnZoomLevelUpdated OnZoomLevelUpdated;
@@ -229,4 +226,7 @@ public:
     FORCEINLINE void SetIsShooting(bool bInIsShooting) { bIsShooting = bInIsShooting; }
     FORCEINLINE AActor* GetSpawnedBulletActor() { return SpawnedBulletActor; }
     FORCEINLINE bool IsStabilizedAiming() const { return bIsStabilizedAiming; }
+
+    UFUNCTION(BlueprintCallable)
+    FORCEINLINE UCameraComponent* GetAimingCameraComponent() const { return AimingCameraComponent; }
 };

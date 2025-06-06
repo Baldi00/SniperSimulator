@@ -7,6 +7,8 @@
 class ARobot;
 class USniperPlayerAnimInstance;
 class URobotAnimInstance;
+class ASniperSimulatorGameState;
+class ASniperPlayer;
 
 USTRUCT()
 struct FRobotData
@@ -39,6 +41,9 @@ class SNIPERSIMULATOR_API ARobotsManager : public AActor
     FVector MaxRobotPosition;
 
     TArray<FRobotData> Robots;
+
+    ASniperSimulatorGameState* GameState = nullptr;
+    ASniperPlayer* SniperPlayer = nullptr;
 
 public:
     ARobotsManager();

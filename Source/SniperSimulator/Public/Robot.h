@@ -12,7 +12,6 @@ class SNIPERSIMULATOR_API ARobot : public AActor
     UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     bool bIsWalking = false;
 
-
 public:
     ARobot();
 
@@ -23,4 +22,7 @@ public:
 
     UPROPERTY(BlueprintReadWrite)
     bool bIsStopped = false;
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void BP_SetCapsuleForwardDistance(float Distance);
 };

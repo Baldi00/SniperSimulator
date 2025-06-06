@@ -597,22 +597,15 @@ void ASniperPlayer::SpawnAndStartMovingBullet()
     if (GameState->IsShootedImpactPointValid() && GameState->GetUseKillcam())
     {
         // Search for robot hit
-        FVector TrajectoryImpactPoint;
-        FHitResult HitResult = UBulletTrajectoryCalculator::SphereTraceAlongTrajectory(this, GameState->GetShootedTrajectory(), 180, GameState->GetShotSimulationTimeIntervalSeconds(), FJsonSerializableArray({ "Robot" }), TrajectoryImpactPoint);
-        if (HitResult.GetActor() != nullptr)
+        if (GameState->GetShootedImpactActor() != nullptr && GameState->GetShootedImpactActor()->ActorHasTag("Robot"))
         {
-            ARobot* Robot = Cast<ARobot>(HitResult.GetActor());
-            FTrajectoryPointData TrajectoryPointData = UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(GameState->GetShootedTrajectory(), AimingCameraComponent->GetComponentLocation(), GetControlRotation(), GameState->GetShotSimulationTimeIntervalSeconds(), FVector::Dist(AimingCameraComponent->GetComponentLocation(), TrajectoryImpactPoint) + 300);
-            if (Robot->IsWalking() && GameState->GetShootedImpactActor()->ActorHasTag("Robot") ||
-                FVector::DotProduct(Robot->Direction, (TrajectoryPointData.Point - Robot->GetActorLocation()).GetSafeNormal()) > 0 && FVector::DotProduct(Robot->Direction, (TrajectoryImpactPoint - Robot->GetActorLocation()).GetSafeNormal()) < 0 ||
-                FVector::DotProduct(Robot->Direction, (TrajectoryPointData.Point - Robot->GetActorLocation()).GetSafeNormal()) < 0 && FVector::DotProduct(Robot->Direction, (TrajectoryImpactPoint - Robot->GetActorLocation()).GetSafeNormal()) > 0)
-            {
-                Robot->bIsStopped = true;
-                GameState->SetLinearShootedTrajectory(AimingCameraComponent->GetComponentLocation(), Robot->GetActorLocation() + FVector::UpVector * FMath::RandRange(140.f, 240.f), TrajectoryPointData.TimeOfFlight);
-                StartKillcam();
-                SetIsShooting(true);
-                return;
-            }
+            ARobot* Robot = Cast<ARobot>(GameState->GetShootedImpactActor());
+            Robot->bIsStopped = true;
+            float TimeOfFlight = UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(GameState->GetShootedTrajectory(), AimingCameraComponent->GetComponentLocation(), GetControlRotation(), GameState->GetShotSimulationTimeIntervalSeconds(), FVector::Dist(GetActorLocation(), Robot->GetActorLocation())).TimeOfFlight;
+            GameState->SetLinearShootedTrajectory(AimingCameraComponent->GetComponentLocation(), Robot->GetActorLocation() + FVector::UpVector * FMath::RandRange(140.f, 240.f), TimeOfFlight);
+            StartKillcam();
+            SetIsShooting(true);
+            return;
         }
 
         // Search for pumpkin hit

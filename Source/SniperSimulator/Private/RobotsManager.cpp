@@ -6,6 +6,10 @@
 #include "RobotAnimInstance.h"
 #include "Robot.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "SniperSimulatorGameState.h"
+#include "SniperPlayer.h"
+#include "Camera/CameraComponent.h"
 
 ARobotsManager::ARobotsManager()
 {
@@ -15,6 +19,9 @@ ARobotsManager::ARobotsManager()
 void ARobotsManager::BeginPlay()
 {
     Super::BeginPlay();
+
+    GameState = Cast<ASniperSimulatorGameState>(UGameplayStatics::GetGameState(this));
+    SniperPlayer = Cast<ASniperPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));;
 
     FActorSpawnParameters SpawnParameters;
     SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -82,6 +89,7 @@ void ARobotsManager::Tick(float DeltaTime)
                         Robot.CurrentPathNextPointIndex = 0;
                     }
                     Robot.Animator->bIsWalking = false;
+                    Robot.SpawnedActor->BP_SetCapsuleForwardDistance(0);
                 }
             }
             else
@@ -95,6 +103,10 @@ void ARobotsManager::Tick(float DeltaTime)
                 Robot.SpawnedActor->AddActorWorldOffset(180.f * DeltaTime * Direction);
                 Robot.SpawnedActor->Direction = Direction;
                 Robot.Animator->bIsWalking = true;
+
+                // Time to reach collider
+                float TimeOfFlight = UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(GameState->GetCurrentTrajectory(), SniperPlayer->GetAimingCameraComponent()->GetComponentLocation(), SniperPlayer->GetControlRotation(), GameState->GetShotSimulationTimeIntervalSeconds(), FVector::Dist(SniperPlayer->GetActorLocation(), Robot.SpawnedActor->GetActorLocation())).TimeOfFlight;
+                Robot.SpawnedActor->BP_SetCapsuleForwardDistance(180.f * TimeOfFlight);
             }
         }
         else

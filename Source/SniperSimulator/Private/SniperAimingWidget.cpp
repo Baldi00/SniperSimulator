@@ -8,6 +8,7 @@
 #include "SniperPlayer.h"
 #include "Components/CanvasPanelSlot.h"
 #include "LineDrawerWidget.h"
+#include "BulletHittableItem.h"
 
 void USniperAimingWidget::NativeConstruct()
 {
@@ -48,6 +49,11 @@ void USniperAimingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
         if (CanvasSlot)
             CanvasSlot->SetPosition(ImpactPointViewport);
     }
+
+    if (GameState->GetCurrentImpactActor()->Implements<UBulletHittableItem>())
+        ImpactPointImage->SetColorAndOpacity(FLinearColor::Green);
+    else
+        ImpactPointImage->SetColorAndOpacity(FLinearColor::Red);
 }
 
 void USniperAimingWidget::SetBindings()

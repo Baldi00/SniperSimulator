@@ -101,7 +101,7 @@ bool UBulletTrajectoryCalculator::GetImpactPoint(const UObject* WorldContextObje
     FHitResult HitResult;
     for (int i = 1; i < Positions.Num(); i++)
     {
-        if (UKismetSystemLibrary::LineTraceSingle(WorldContextObject, Positions[i - 1], Positions[i], ETraceTypeQuery::TraceTypeQuery1, false, Ignored, EDrawDebugTrace::None, HitResult, true))
+        if (UKismetSystemLibrary::LineTraceSingle(WorldContextObject, Positions[i - 1], Positions[i], UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, Ignored, EDrawDebugTrace::None, HitResult, true))
         {
             ImpactPoint = HitResult.ImpactPoint;
             ImpactActor = HitResult.GetActor();
