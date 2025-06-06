@@ -24,6 +24,8 @@ struct FShootingTableRow
     int32 WindageClicks60;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     int32 WindageClicks90;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    int32 MovingTarget90;
 };
 
 UENUM(BlueprintType)

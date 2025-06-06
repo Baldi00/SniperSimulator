@@ -71,7 +71,7 @@ FTrajectoryPointData UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistan
             if (Distance <= 0)
                 Result.SuggestedElevationClicks = 0;
             else
-                Result.SuggestedElevationClicks = FMath::RoundToInt(FMath::RadiansToDegrees(FMath::Atan((InitialPosition.Z - Result.Point.Z) / Distance)) / 0.0057f); // Atan(0.01/100) * RadToDeg = 0.0057f, base click for 1cm at 100m
+                Result.SuggestedElevationClicks = FMath::RoundToInt(FMath::RadiansToDegrees(FMath::Atan((InitialPosition.Z - Result.Point.Z) / Distance)) / 0.00572958f); // Atan(0.01/100) * RadToDeg = 0.00572958f, base click for 1cm at 100m = 0.1mrad
 
             FVector ShootForwardVector = FRotationMatrix(RifleRotation).GetScaledAxis(EAxis::X);
 
@@ -87,7 +87,7 @@ FTrajectoryPointData UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistan
             if (Distance <= 0)
                 Result.SuggestedWindageClicks = 0;
             else
-                Result.SuggestedWindageClicks = FMath::RoundToInt(FMath::RadiansToDegrees(FMath::Atan(Deviation / Distance)) / 0.0057f);
+                Result.SuggestedWindageClicks = FMath::RoundToInt(FMath::RadiansToDegrees(FMath::Atan(Deviation / Distance)) / 0.00572958f);
 
             return Result;
         }

@@ -524,7 +524,7 @@ void ASniperPlayer::UpdateSpawnedBulletTransform(float Time)
         TArray<AActor*> Ignored;
         FVector NextPosition = UBulletTrajectoryCalculator::GetPositionAtTime(GameState->GetShootedTrajectory(), GameState->GetShotSimulationTimeIntervalSeconds(), Time);
         FHitResult HitResult;
-        UKismetSystemLibrary::LineTraceSingle(this, SpawnedBulletActor->GetActorLocation(), NextPosition, ETraceTypeQuery::TraceTypeQuery1, false, Ignored, EDrawDebugTrace::None, HitResult, true);
+        UKismetSystemLibrary::LineTraceSingle(this, SpawnedBulletActor->GetActorLocation(), NextPosition, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel2), false, Ignored, EDrawDebugTrace::None, HitResult, true);
         if (HitResult.bBlockingHit)
         {
             if (HitResult.GetActor()->Implements<UBulletHittableItem>())

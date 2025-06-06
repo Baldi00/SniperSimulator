@@ -132,6 +132,10 @@ void ASniperSimulatorGameState::ComputeShootingTable()
         Row.WindageClicks60 = PointData.SuggestedWindageClicks;
         PointData = UBulletTrajectoryCalculator::GetTrajectoryPointDataAtDistance(TrajectoryWind90, FVector::ZeroVector, FRotator::ZeroRotator, ShotSimulationTimeIntervalSeconds, i);
         Row.WindageClicks90 = PointData.SuggestedWindageClicks;
+        if (i == 0)
+            Row.MovingTarget90 = 0;
+        else
+            Row.MovingTarget90 = FMath::RoundToInt(FMath::RadiansToDegrees(FMath::Atan(180 * Row.TimeOfFlight / Row.Distance)) / 0.00572958f);
         ShootingTable.Add(Row);
     }
 }
