@@ -50,7 +50,7 @@ void USniperAimingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
             CanvasSlot->SetPosition(ImpactPointViewport);
     }
 
-    if (GameState->GetCurrentImpactActor()->Implements<UBulletHittableItem>())
+    if (GameState->GetCurrentImpactActor()->Implements<UBulletHittableItem>() && !IBulletHittableItem::Execute_IsAlreadyHit(GameState->GetCurrentImpactActor()))
         ImpactPointImage->SetColorAndOpacity(FLinearColor::Green);
     else
         ImpactPointImage->SetColorAndOpacity(FLinearColor::Red);

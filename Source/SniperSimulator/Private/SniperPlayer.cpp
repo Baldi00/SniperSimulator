@@ -527,7 +527,7 @@ void ASniperPlayer::UpdateSpawnedBulletTransform(float Time)
         UKismetSystemLibrary::LineTraceSingle(this, SpawnedBulletActor->GetActorLocation(), NextPosition, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel2), false, Ignored, EDrawDebugTrace::None, HitResult, true);
         if (HitResult.bBlockingHit)
         {
-            if (HitResult.GetActor()->Implements<UBulletHittableItem>())
+            if (HitResult.GetActor()->Implements<UBulletHittableItem>() && !IBulletHittableItem::Execute_IsAlreadyHit(HitResult.GetActor()))
             {
                 IBulletHittableItem::Execute_BulletHit(HitResult.GetActor(), (NextPosition - SpawnedBulletActor->GetActorLocation()).GetSafeNormal(), bIsInKillcam);
                 if (!bIsInKillcam)
@@ -597,7 +597,7 @@ void ASniperPlayer::SpawnAndStartMovingBullet()
     if (GameState->IsShootedImpactPointValid() && GameState->GetUseKillcam())
     {
         // Search for robot hit
-        if (GameState->GetShootedImpactActor() != nullptr && GameState->GetShootedImpactActor()->ActorHasTag("Robot"))
+        if (GameState->GetShootedImpactActor() != nullptr && GameState->GetShootedImpactActor()->ActorHasTag("Robot") && !IBulletHittableItem::Execute_IsAlreadyHit(GameState->GetShootedImpactActor()))
         {
             ARobot* Robot = Cast<ARobot>(GameState->GetShootedImpactActor());
             Robot->bIsStopped = true;
@@ -609,7 +609,7 @@ void ASniperPlayer::SpawnAndStartMovingBullet()
         }
 
         // Search for pumpkin hit
-        if (GameState->GetShootedImpactActor() != nullptr && GameState->GetShootedImpactActor()->ActorHasTag("Pumpkin"))
+        if (GameState->GetShootedImpactActor() != nullptr && GameState->GetShootedImpactActor()->ActorHasTag("Pumpkin") && !IBulletHittableItem::Execute_IsAlreadyHit(GameState->GetShootedImpactActor()))
         {
             StartKillcam();
             SetIsShooting(true);
