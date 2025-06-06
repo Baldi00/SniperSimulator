@@ -43,9 +43,14 @@ ASniperPlayer::ASniperPlayer()
     CameraBoomAiming->bUsePawnControlRotation = true;
     CameraBoomAiming->bDoCollisionTest = false;
 
-    // Create a follow camera
+    // Create a aiming camera
     AimingCameraActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("AimingCameraActor"));
     AimingCameraActor->SetupAttachment(CameraBoomAiming, USpringArmComponent::SocketName);
+
+    // Create a dummy camera
+    DummyCameraActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("DummyCameraActor"));
+    DummyCameraActor->SetupAttachment(RootComponent, USpringArmComponent::SocketName);
+    DummyCameraActor->SetWorldLocation(FVector(1000000, 1000000, -1000000));
 }
 
 void ASniperPlayer::BeginPlay()
@@ -285,6 +290,7 @@ void ASniperPlayer::StopAiming(const FInputActionValue& Value)
 
     GetWorldTimerManager().ClearTimer(DefaultToAimingTimerHandler);
     bIsAiming = false;
+    bIsGraphicallyAiming = false;
     bIsStabilizedAiming = false;
     Animator->bIsAiming = bIsAiming;
 
@@ -292,6 +298,7 @@ void ASniperPlayer::StopAiming(const FInputActionValue& Value)
         return;
 
     FHitResult UnusedHit;
+    UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(AimingCameraActor->GetChildActor());
     GetCharacterMovement()->SafeMoveUpdatedComponent(FVector::ZeroVector, FRotator(0, GetControlRotation().Yaw, 0), false, UnusedHit);
     SwitchToDefaultView();
     UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(this, 0.2f);
@@ -513,7 +520,10 @@ void ASniperPlayer::SwitchToAimingView()
     {
         AimingWidget = CreateWidget<USniperAimingWidget>(GetWorld(), AimingWidgetClass);
         AimingWidget->AddToViewport();
+        UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(DummyCameraActor->GetChildActor());
     }
+
+    bIsGraphicallyAiming = true;
     GetMesh()->SetVisibility(false, true);
 }
 

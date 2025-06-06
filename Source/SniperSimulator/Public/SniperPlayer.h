@@ -37,6 +37,9 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UChildActorComponent> AimingCameraActor;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UChildActorComponent> DummyCameraActor;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
@@ -114,6 +117,8 @@ class SNIPERSIMULATOR_API ASniperPlayer : public ACharacter
 
     UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     bool bIsAiming = false;
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    bool bIsGraphicallyAiming = false;
     bool bIsShooting = false;
     UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     bool bIsInKillcam = false;
